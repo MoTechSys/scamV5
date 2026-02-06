@@ -16,21 +16,23 @@ S-ACM - Smart Academic Content Management System
 {% block extra_css %}
 {{ block.super }}
 <style>
-.report-card {
-    transition: transform 0.2s, box-shadow 0.2s;
-    cursor: pointer;
-}
-.report-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
-}
+    .report-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+    }
+
+    .report-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+    }
 </style>
 {% endblock %}
 
 {% block dashboard_content %}
 <div class="container-fluid">
     {# ========== Page Header ========== #}
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+    <div
+        class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
         <div class="d-flex align-items-center gap-3">
             <div class="page-icon bg-success-subtle text-success rounded-3 p-3">
                 <i class="bi bi-bar-chart fs-4"></i>
@@ -40,7 +42,7 @@ S-ACM - Smart Academic Content Management System
                 <p class="text-muted mb-0 small">تحليل بيانات النظام وإنشاء التقارير</p>
             </div>
         </div>
-        
+
         <div class="d-flex gap-2">
             <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#exportModal">
                 <i class="bi bi-download me-1"></i>تصدير تقرير
@@ -65,7 +67,8 @@ S-ACM - Smart Academic Content Management System
                     <select class="form-select" name="level">
                         <option value="">الكل</option>
                         {% for level in levels %}
-                        <option value="{{ level.id }}" {% if request.GET.level == level.id|stringformat:"i" %}selected{% endif %}>
+                        <option value="{{ level.id }}" {% if request.GET.level==level.id|stringformat:"i" %}selected{%
+                            endif %}>
                             {{ level.level_name }}
                         </option>
                         {% endfor %}
@@ -76,7 +79,8 @@ S-ACM - Smart Academic Content Management System
                     <select class="form-select" name="major">
                         <option value="">الكل</option>
                         {% for major in majors %}
-                        <option value="{{ major.id }}" {% if request.GET.major == major.id|stringformat:"i" %}selected{% endif %}>
+                        <option value="{{ major.id }}" {% if request.GET.major==major.id|stringformat:"i" %}selected{%
+                            endif %}>
                             {{ major.major_name }}
                         </option>
                         {% endfor %}
@@ -93,10 +97,14 @@ S-ACM - Smart Academic Content Management System
 
     {# ========== Summary Stats ========== #}
     <div class="row g-3 mb-4">
-        {% include 'components/stat_card.html' with title="إجمالي المستخدمين" value=stats.total_users icon="bi-people" color="primary" change=stats.users_change change_type=stats.users_change_type %}
-        {% include 'components/stat_card.html' with title="المقررات النشطة" value=stats.active_courses icon="bi-book" color="success" %}
-        {% include 'components/stat_card.html' with title="الملفات المرفوعة" value=stats.total_files icon="bi-file-earmark" color="info" change=stats.files_change change_type=stats.files_change_type %}
-        {% include 'components/stat_card.html' with title="إجمالي التحميلات" value=stats.total_downloads icon="bi-download" color="warning" %}
+        {% include 'components/stat_card.html' with title="إجمالي المستخدمين" value=stats.total_users icon="bi-people"
+        color="primary" change=stats.users_change change_type=stats.users_change_type %}
+        {% include 'components/stat_card.html' with title="المقررات النشطة" value=stats.active_courses icon="bi-book"
+        color="success" %}
+        {% include 'components/stat_card.html' with title="الملفات المرفوعة" value=stats.total_files
+        icon="bi-file-earmark" color="info" change=stats.files_change change_type=stats.files_change_type %}
+        {% include 'components/stat_card.html' with title="إجمالي التحميلات" value=stats.total_downloads
+        icon="bi-download" color="warning" %}
     </div>
 
     <div class="row g-4">
@@ -157,7 +165,8 @@ S-ACM - Smart Academic Content Management System
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
                                     <td>
-                                        <a href="{% url 'courses:course_detail' course.id %}">{{ course.course_name }}</a>
+                                        <a href="{% url 'courses:course_detail' course.id %}">{{ course.course_name
+                                            }}</a>
                                     </td>
                                     <td>{{ course.files_count }}</td>
                                     <td>{{ course.downloads_count }}</td>
@@ -281,42 +290,43 @@ S-ACM - Smart Academic Content Management System
 {% block dashboard_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Activity Chart
-    const activityCtx = document.getElementById('activityChart');
-    if (activityCtx) {
-        new Chart(activityCtx, {
-            type: 'line',
-            data: {
-                labels: {{ activity_labels|safe|default:'["السبت", "الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"]' }},
-                datasets: [{
-                    label: 'تسجيلات الدخول',
-                    data: {{ login_data|safe|default:'[12, 19, 3, 5, 2, 3, 7]' }},
-                    borderColor: 'rgba(13, 110, 253, 1)',
-                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                    fill: true,
-                    tension: 0.4
+    document.addEventListener('DOMContentLoaded', function () {
+        // Activity Chart
+        const activityCtx = document.getElementById('activityChart');
+        if (activityCtx) {
+            new Chart(activityCtx, {
+                type: 'line',
+                data: {
+                    labels: {{ activity_labels| safe |default: '["السبت", "الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"]' }
+    },
+        datasets: [{
+            label: 'تسجيلات الدخول',
+            data: {{ login_data| safe |default: '[12, 19, 3, 5, 2, 3, 7]' }},
+        borderColor: 'rgba(13, 110, 253, 1)',
+        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+        fill: true,
+        tension: 0.4
                 }, {
-                    label: 'التحميلات',
-                    data: {{ download_data|safe|default:'[8, 12, 6, 9, 11, 8, 14]' }},
-                    borderColor: 'rgba(25, 135, 84, 1)',
-                    backgroundColor: 'rgba(25, 135, 84, 0.1)',
-                    fill: true,
-                    tension: 0.4
+            label: 'التحميلات',
+            data: {{ download_data| safe |default: '[8, 12, 6, 9, 11, 8, 14]' }},
+        borderColor: 'rgba(25, 135, 84, 1)',
+        backgroundColor: 'rgba(25, 135, 84, 0.1)',
+        fill: true,
+        tension: 0.4
                 }]
             },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'bottom' }
-                },
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
+        options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'bottom' }
+        },
+        scales: {
+            y: { beginAtZero: true }
+        }
+    }
         });
     }
-    
+
     // Users Distribution Chart
     const usersCtx = document.getElementById('usersDistributionChart');
     if (usersCtx) {
@@ -325,23 +335,23 @@ document.addEventListener('DOMContentLoaded', function() {
             data: {
                 labels: ['طلاب', 'مدرسين', 'مسؤولين'],
                 datasets: [{
-                    data: [{{ stats.students|default:70 }}, {{ stats.instructors|default:20 }}, {{ stats.admins|default:10 }}],
-                    backgroundColor: [
-                        'rgba(13, 202, 240, 0.8)',
-                        'rgba(255, 193, 7, 0.8)',
-                        'rgba(220, 53, 69, 0.8)'
-                    ]
+                    data: [{{ stats.students |default: 70 }}, {{ stats.instructors |default: 20 }}, {{ stats.admins |default: 10 }}],
+    backgroundColor: [
+        'rgba(13, 202, 240, 0.8)',
+        'rgba(255, 193, 7, 0.8)',
+        'rgba(220, 53, 69, 0.8)'
+    ]
                 }]
             },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'bottom' }
-                }
-            }
+    options: {
+        responsive: true,
+            plugins: {
+            legend: { position: 'bottom' }
+        }
+    }
         });
     }
-    
+
     // File Types Chart
     const fileTypesCtx = document.getElementById('fileTypesChart');
     if (fileTypesCtx) {
@@ -351,31 +361,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 labels: ['PDF', 'Word', 'PowerPoint', 'فيديو', 'أخرى'],
                 datasets: [{
                     label: 'عدد التحميلات',
-                    data: {{ file_types_data|safe|default:'[45, 25, 30, 15, 10]' }},
-                    backgroundColor: [
-                        'rgba(220, 53, 69, 0.7)',
-                        'rgba(13, 110, 253, 0.7)',
-                        'rgba(255, 193, 7, 0.7)',
-                        'rgba(25, 135, 84, 0.7)',
-                        'rgba(108, 117, 125, 0.7)'
-                    ]
+                    data: {{ file_types_data| safe |default: '[45, 25, 30, 15, 10]'
+            }
+        },
+            backgroundColor: [
+            'rgba(220, 53, 69, 0.7)',
+            'rgba(13, 110, 253, 0.7)',
+            'rgba(255, 193, 7, 0.7)',
+            'rgba(25, 135, 84, 0.7)',
+            'rgba(108, 117, 125, 0.7)'
+        ]
                 }]
             },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
+    options: {
+        responsive: true,
+            plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: { beginAtZero: true }
+        }
+    }
         });
     }
 });
 
-function generateReport(type) {
-    window.location.href = '{% url "reports:generate" %}?type=' + type;
-}
+    function generateReport(type) {
+        window.location.href = '/reports/generate/?type=' + type;
+    }
 </script>
 {% endblock %}

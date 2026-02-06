@@ -26,6 +26,9 @@ urlpatterns = [
     
     # AI Features App
     path('ai/', include('apps.ai_features.urls')),
+    
+    # Reports App
+    path('reports/', include('apps.reports.urls')),
 ]
 
 # Serve media files in development

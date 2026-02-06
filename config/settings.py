@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'apps.courses.apps.CoursesConfig',
     'apps.notifications.apps.NotificationsConfig',
     'apps.ai_features.apps.AiFeaturesConfig',
+    'apps.reports.apps.ReportsConfig',
 ]
 
 MIDDLEWARE = [
