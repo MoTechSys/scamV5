@@ -1,0 +1,85 @@
+{% extends 'layouts/dashboard_base.html' %}
+{% load static %}
+
+{% block page_title %}تعديل الإشعار{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'notifications:admin_list' %}">الإشعارات</a></li>
+<li class="breadcrumb-item active">تعديل</li>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pencil me-2"></i>تعديل الإشعار
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="id_title" class="form-label">العنوان <span class="text-danger">*</span></label>
+                            <input type="text" name="title" id="id_title" class="form-control" 
+                                   value="{{ object.title }}" required>
+                            {% if form.title.errors %}
+                            <div class="invalid-feedback d-block">{{ form.title.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_body" class="form-label">المحتوى <span class="text-danger">*</span></label>
+                            <textarea name="body" id="id_body" class="form-control" rows="5" required>{{ object.body }}</textarea>
+                            {% if form.body.errors %}
+                            <div class="invalid-feedback d-block">{{ form.body.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_notification_type" class="form-label">النوع</label>
+                                <select name="notification_type" id="id_notification_type" class="form-select">
+                                    <option value="info" {% if object.notification_type == 'info' %}selected{% endif %}>معلومات</option>
+                                    <option value="warning" {% if object.notification_type == 'warning' %}selected{% endif %}>تحذير</option>
+                                    <option value="success" {% if object.notification_type == 'success' %}selected{% endif %}>نجاح</option>
+                                    <option value="system" {% if object.notification_type == 'system' %}selected{% endif %}>نظام</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="id_priority" class="form-label">الأولوية</label>
+                                <select name="priority" id="id_priority" class="form-select">
+                                    <option value="low" {% if object.priority == 'low' %}selected{% endif %}>منخفضة</option>
+                                    <option value="medium" {% if object.priority == 'medium' %}selected{% endif %}>متوسطة</option>
+                                    <option value="high" {% if object.priority == 'high' %}selected{% endif %}>عالية</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-1"></i>حفظ التغييرات
+                            </button>
+                            <a href="{% url 'notifications:admin_list' %}" class="btn btn-outline-secondary">
+                                إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

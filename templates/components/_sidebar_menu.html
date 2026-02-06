@@ -1,0 +1,69 @@
+{% load permissions %}
+
+<ul class="nav flex-column sidebar-menu">
+    {% for item in menu_items %}
+        {% if item.is_divider %}
+            <li class="nav-item sidebar-separator">
+                <hr class="my-2 opacity-25">
+            </li>
+        {% elif 'separator' in item.code %}
+            <li class="nav-item sidebar-separator">
+                <span class="separator-text">{{ item.label|default:item.title|slice:"4:-4" }}</span>
+            </li>
+        {% elif item.children %}
+            <li class="nav-item has-submenu">
+                <a class="nav-link sidebar-link" data-bs-toggle="collapse" href="#submenu-{{ item.code }}" role="button"
+                    aria-expanded="false">
+                    <i class="bi {{ item.icon }} link-icon"></i>
+                    <span class="link-text">{{ item.label|default:item.title }}</span>
+                    <i class="bi bi-chevron-down submenu-arrow"></i>
+                </a>
+                <div class="collapse submenu" id="submenu-{{ item.code }}">
+                    <ul class="nav flex-column">
+                        {% for child in item.children %}
+                        <li class="nav-item">
+                            {% with child_url=child.url|default:child.get_url %}
+                            <a class="nav-link sidebar-link submenu-link {% if request.path == child_url %}active{% endif %}"
+                                href="{{ child_url }}" {% if collapsed %}data-bs-toggle="tooltip" data-bs-placement="left"
+                                title="{{ child.label|default:child.title }}" {% endif %}>
+                                <i class="bi {{ child.icon }} link-icon"></i>
+                                <span class="link-text">{{ child.label|default:child.title }}</span>
+                            </a>
+                            {% endwith %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </li>
+        {% else %}
+            <li class="nav-item">
+                {% with item_url=item.url|default:item.get_url %}
+                <a class="nav-link sidebar-link {% if request.path == item_url or request.path|slice:':20' == item_url|slice:':20' %}active{% endif %}"
+                    href="{{ item_url }}" {% if collapsed %}data-bs-toggle="tooltip" data-bs-placement="left"
+                    title="{{ item.label|default:item.title }}" {% endif %}>
+                    <i class="bi {{ item.icon }} link-icon"></i>
+                    <span class="link-text">{{ item.label|default:item.title }}</span>
+                    {% if item.badge %}
+                    <span class="badge {{ item.badge_class|default:'bg-primary' }} ms-auto">{{ item.badge }}</span>
+                    {% endif %}
+                </a>
+                {% endwith %}
+            </li>
+        {% endif %}
+    {% empty %}
+        <li class="nav-item">
+            <a class="nav-link sidebar-link {% if request.path == '/dashboard/' %}active{% endif %}"
+                href="{% url 'core:dashboard' %}">
+                <i class="bi bi-speedometer2 link-icon"></i>
+                <span class="link-text">لوحة التحكم</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link sidebar-link {% if '/courses/' in request.path %}active{% endif %}"
+                href="{% url 'courses:course_list' %}">
+                <i class="bi bi-book link-icon"></i>
+                <span class="link-text">المقررات</span>
+            </a>
+        </li>
+    {% endfor %}
+</ul>

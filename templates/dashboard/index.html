@@ -1,0 +1,264 @@
+{% extends 'layouts/dashboard_base.html' %}
+{% load static %}
+{% load permissions %}
+
+{#
+لوحة التحكم الموحدة - Unified Dashboard
+S-ACM - Smart Academic Content Management System
+
+هذه الصفحة تعرض محتوى ديناميكي بناءً على صلاحيات المستخدم:
+- للطالب: مقرراته، إحصائياته الشخصية، إشعاراته
+- للمدرس: مقرراته، ملفاته، إحصائياته
+- للمسؤول: إحصائيات النظام، سجل النشاط، إجراءات سريعة
+#}
+
+{% block page_title %}لوحة التحكم{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">لوحة التحكم</li>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    {# ========== Page Header ========== #}
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+        <div>
+            <h4 class="mb-1">مرحباً، {{ request.user.full_name }}</h4>
+            <p class="text-muted mb-0">
+                <i class="bi bi-shield-check me-1"></i>{{ user_role|default:"مستخدم" }}
+                {% if request.user.major %}
+                <span class="mx-2">|</span>
+                <i class="bi bi-mortarboard me-1"></i>{{ request.user.major.major_name }}
+                {% endif %}
+                {% if request.user.level %}
+                <span class="mx-2">|</span>
+                <i class="bi bi-layers me-1"></i>{{ request.user.level.level_name }}
+                {% endif %}
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            {% if current_semester %}
+            <span class="badge bg-success fs-6 py-2 px-3">
+                <i class="bi bi-calendar-check me-1"></i>{{ current_semester.semester_name }}
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ========== إحصائيات النظام (للمسؤولين) ========== #}
+    {% if perms.view_system_stats or request.user.is_admin %}
+    <div class="row g-3 mb-4">
+        {% include 'components/stat_card.html' with title="إجمالي المستخدمين" value=stats.total_users icon="bi-people" color="primary" link=users_url %}
+        {% include 'components/stat_card.html' with title="المستخدمين النشطين" value=stats.active_users icon="bi-person-check" color="success" %}
+        {% include 'components/stat_card.html' with title="الطلاب" value=stats.total_students icon="bi-mortarboard" color="info" %}
+        {% include 'components/stat_card.html' with title="المدرسين" value=stats.total_instructors icon="bi-person-workspace" color="warning" %}
+    </div>
+    
+    <div class="row g-3 mb-4">
+        {% include 'components/stat_card.html' with title="المقررات" value=stats.total_courses icon="bi-book" color="primary" link=courses_url %}
+        {% include 'components/stat_card.html' with title="الملفات" value=stats.total_files icon="bi-file-earmark" color="success" %}
+        {% include 'components/stat_card.html' with title="التحميلات" value=stats.total_downloads icon="bi-download" color="info" %}
+        {% include 'components/stat_card.html' with title="الإشعارات" value=stats.total_notifications icon="bi-bell" color="warning" %}
+    </div>
+    {% endif %}
+
+    {# ========== إحصائيات شخصية (للطلاب والمدرسين) ========== #}
+    {% if perms.view_my_stats or request.user.is_student or request.user.is_instructor %}
+    {% if not request.user.is_admin %}
+    <div class="row g-3 mb-4">
+        {% include 'components/stat_card.html' with title="مقرراتي" value=my_courses_count icon="bi-book" color="primary" link=my_courses_url %}
+        {% include 'components/stat_card.html' with title="الملفات المتاحة" value=my_files_count icon="bi-file-earmark" color="success" %}
+        {% include 'components/stat_card.html' with title="إشعارات جديدة" value=unread_notifications_count icon="bi-bell" color="info" link=notifications_url %}
+        {% if request.user.is_instructor %}
+        {% include 'components/stat_card.html' with title="ملفاتي المرفوعة" value=my_uploaded_files_count icon="bi-upload" color="warning" %}
+        {% else %}
+        {% include 'components/stat_card.html' with title="التحميلات" value=my_downloads_count icon="bi-download" color="warning" %}
+        {% endif %}
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <div class="row g-4">
+        {# ========== مقرراتي (للطلاب والمدرسين) ========== #}
+        {% if perms.view_my_courses or request.user.is_student or request.user.is_instructor %}
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                        <i class="bi bi-book me-2 text-primary"></i>
+                        {% if request.user.is_instructor %}مقرراتي{% else %}مقرراتي الحالية{% endif %}
+                    </h6>
+                    <a href="{% url 'courses:course_list' %}" class="btn btn-sm btn-outline-primary">
+                        عرض الكل <i class="bi bi-arrow-left"></i>
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for course in my_courses %}
+                        {% include 'components/course_card.html' with course=course show_upload_btn=request.user.is_instructor show_files_count=True %}
+                        {% empty %}
+                        {% include 'components/empty_state.html' with icon="bi-book" title="لا توجد مقررات" message="لم يتم تعيين أي مقررات لك بعد" size="sm" %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            {# ========== آخر الملفات (للطلاب) ========== #}
+            {% if request.user.is_student and recent_files %}
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                        <i class="bi bi-file-earmark-arrow-down me-2 text-success"></i>آخر الملفات المضافة
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% for file in recent_files %}
+                    {% include 'components/file_item.html' with file=file show_actions=True show_uploader=True %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {# ========== الإجراءات السريعة ========== #}
+        <div class="{% if perms.view_my_courses or request.user.is_student or request.user.is_instructor %}col-lg-4{% else %}col-lg-6{% endif %}">
+            {% include 'components/quick_actions.html' %}
+            
+            {# ========== معلومات الفصل الدراسي ========== #}
+            {% if current_semester %}
+            <div class="mt-4">
+                {% include 'components/semester_info.html' with semester=current_semester %}
+            </div>
+            {% endif %}
+            
+            {# ========== آخر الإشعارات ========== #}
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                        <i class="bi bi-bell me-2 text-info"></i>آخر الإشعارات
+                    </h6>
+                    <a href="{% url 'notifications:list' %}" class="btn btn-sm btn-link">عرض الكل</a>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for notification in recent_notifications %}
+                        <li class="list-group-item {% if not notification.is_read %}bg-light{% endif %}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1 small">{{ notification.title }}</h6>
+                                    <p class="mb-0 text-muted small">{{ notification.body|truncatechars:60 }}</p>
+                                </div>
+                                <small class="text-muted">{{ notification.created_at|timesince }}</small>
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item text-center text-muted py-4">
+                            <i class="bi bi-bell-slash fs-4 d-block mb-2"></i>
+                            لا توجد إشعارات
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        {# ========== سجل النشاط (للمسؤولين) ========== #}
+        {% if perms.view_activity_log or request.user.is_admin %}
+        <div class="col-12">
+            {% include 'components/activity_log.html' with activities=recent_activities %}
+        </div>
+        {% endif %}
+        
+        {# ========== إحصائيات المقررات (للمسؤولين) ========== #}
+        {% if request.user.is_admin and course_stats %}
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-bar-chart me-2 text-primary"></i>إحصائيات المقررات
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="coursesChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-pie-chart me-2 text-success"></i>توزيع المستخدمين
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="usersChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block dashboard_js %}
+{% if request.user.is_admin %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Courses Chart
+    const coursesCtx = document.getElementById('coursesChart');
+    if (coursesCtx) {
+        new Chart(coursesCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ course_labels|safe|default:'[]' }},
+                datasets: [{
+                    label: 'عدد الملفات',
+                    data: {{ course_data|safe|default:'[]' }},
+                    backgroundColor: 'rgba(13, 110, 253, 0.5)',
+                    borderColor: 'rgba(13, 110, 253, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+    
+    // Users Chart
+    const usersCtx = document.getElementById('usersChart');
+    if (usersCtx) {
+        new Chart(usersCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['طلاب', 'مدرسين', 'مسؤولين'],
+                datasets: [{
+                    data: [{{ stats.total_students|default:0 }}, {{ stats.total_instructors|default:0 }}, {{ stats.total_admins|default:0 }}],
+                    backgroundColor: [
+                        'rgba(13, 202, 240, 0.7)',
+                        'rgba(255, 193, 7, 0.7)',
+                        'rgba(220, 53, 69, 0.7)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

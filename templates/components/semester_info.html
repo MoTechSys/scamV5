@@ -1,0 +1,53 @@
+{#
+Semester Info Component - معلومات الفصل الدراسي الحالي
+S-ACM - Smart Academic Content Management System
+
+Usage:
+<!-- Usage: {% include 'components/semester_info.html' with semester=current_semester %} -->
+
+Parameters:
+- semester: كائن الفصل الدراسي (Semester model)
+- compact: عرض مضغوط
+#}
+
+{% if semester %}
+<div class="card border-0 shadow-sm {% if compact %}mb-2{% else %}mb-4{% endif %}">
+    <div class="card-body {% if compact %}py-2{% endif %}">
+        <div class="d-flex align-items-center gap-3">
+            <div class="semester-icon bg-success-subtle text-success rounded-3 {% if compact %}p-2{% else %}p-3{% endif %}">
+                <i class="bi bi-calendar-check {% if compact %}fs-5{% else %}fs-4{% endif %}"></i>
+            </div>
+            <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="mb-0 {% if compact %}small{% endif %}">{{ semester.semester_name }}</h6>
+                        {% if not compact %}
+                        <small class="text-muted">{{ semester.academic_year|default:"العام الأكاديمي الحالي" }}</small>
+                        {% endif %}
+                    </div>
+                    <span class="badge bg-success">الفصل الحالي</span>
+                </div>
+                
+                {% if semester.start_date and semester.end_date and not compact %}
+                <div class="mt-2">
+                    <div class="progress" style="height: 6px;">
+                        {% widthratio semester.days_passed semester.total_days 100 as progress_percent %}
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {{ progress_percent|default:0 }}%"></div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-1">
+                        <small class="text-muted">{{ semester.start_date|date:"Y/m/d" }}</small>
+                        <small class="text-muted">{{ semester.end_date|date:"Y/m/d" }}</small>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-warning {% if compact %}py-2 small{% endif %}">
+    <i class="bi bi-exclamation-triangle me-1"></i>
+    لم يتم تحديد الفصل الدراسي الحالي
+</div>
+{% endif %}

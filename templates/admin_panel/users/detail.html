@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}تفاصيل المستخدم - S-ACM{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:admin_dashboard' %}">لوحة التحكم</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'accounts:admin_user_list' %}">المستخدمين</a></li>
+        <li class="breadcrumb-item active">{{ viewed_user.full_name|default:viewed_user.academic_id }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <!-- User Info Card -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-body text-center">
+                {% if viewed_user.profile_picture %}
+                <img src="{{ viewed_user.profile_picture.url }}" class="rounded-circle mb-3" width="120" height="120" alt="صورة المستخدم">
+                {% else %}
+                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 120px; height: 120px; font-size: 48px;">
+                    <i class="bi bi-person"></i>
+                </div>
+                {% endif %}
+                
+                <h4>{{ viewed_user.full_name|default:"بدون اسم" }}</h4>
+                <p class="text-muted mb-2">
+                    <code>{{ viewed_user.academic_id }}</code>
+                </p>
+                
+                <span class="badge {% if viewed_user.role.role_name == 'admin' %}bg-danger{% elif viewed_user.role.role_name == 'instructor' %}bg-info{% else %}bg-success{% endif %} fs-6">
+                    {{ viewed_user.role.role_name|default:"-" }}
+                </span>
+                
+                <hr>
+                
+                <div class="text-start">
+                    <p class="mb-2">
+                        <i class="bi bi-envelope me-2"></i>
+                        {{ viewed_user.email|default:"غير محدد" }}
+                    </p>
+                    <p class="mb-2">
+                        <i class="bi bi-phone me-2"></i>
+                        {{ viewed_user.phone_number|default:"غير محدد" }}
+                    </p>
+                    {% if viewed_user.major %}
+                    <p class="mb-2">
+                        <i class="bi bi-building me-2"></i>
+                        {{ viewed_user.major.major_name }}
+                    </p>
+                    {% endif %}
+                    {% if viewed_user.level %}
+                    <p class="mb-2">
+                        <i class="bi bi-layers me-2"></i>
+                        {{ viewed_user.level.level_name }}
+                    </p>
+                    {% endif %}
+                </div>
+                
+                <hr>
+                
+                <div class="d-grid gap-2">
+                    <a href="{% url 'accounts:admin_user_edit' viewed_user.pk %}" class="btn btn-primary">
+                        <i class="bi bi-pencil me-1"></i>تعديل البيانات
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Account Status -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="bi bi-shield-check me-2"></i>حالة الحساب
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>الحالة:</span>
+                    {% if viewed_user.account_status == 'active' %}
+                    <span class="badge bg-success">نشط</span>
+                    {% elif viewed_user.account_status == 'inactive' %}
+                    <span class="badge bg-secondary">غير مفعّل</span>
+                    {% elif viewed_user.account_status == 'suspended' %}
+                    <span class="badge bg-danger">موقوف</span>
+                    {% elif viewed_user.account_status == 'graduated' %}
+                    <span class="badge bg-info">خريج</span>
+                    {% else %}
+                    <span class="badge bg-light text-dark">{{ viewed_user.account_status }}</span>
+                    {% endif %}
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>تاريخ الإنشاء:</span>
+                    <span>{{ viewed_user.date_joined|date:"Y/m/d" }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>آخر دخول:</span>
+                    <span>{{ viewed_user.last_login|date:"Y/m/d H:i"|default:"لم يسجل دخول" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Activity & Stats -->
+    <div class="col-lg-8">
+        <!-- Stats for Students -->
+        {% if viewed_user.is_student and download_count is not None %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-bar-chart me-2"></i>إحصائيات الطالب
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <div class="stat-card primary">
+                            <div class="stat-number">{{ download_count }}</div>
+                            <div class="stat-label">التحميلات</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Stats for Instructors -->
+        {% if viewed_user.is_instructor and uploaded_files is not None %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-bar-chart me-2"></i>إحصائيات المدرس
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-6">
+                        <div class="stat-card success">
+                            <div class="stat-number">{{ uploaded_files }}</div>
+                            <div class="stat-label">الملفات المرفوعة</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="stat-card info">
+                            <div class="stat-number">{{ assigned_courses|length }}</div>
+                            <div class="stat-label">المقررات المعينة</div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if assigned_courses %}
+                <h6 class="mt-4 mb-3">المقررات المعينة:</h6>
+                <div class="row g-2">
+                    {% for ic in assigned_courses %}
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body py-2">
+                                <strong>{{ ic.course.course_code }}</strong> - {{ ic.course.course_name }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Recent Activity -->
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-clock-history me-2"></i>آخر النشاطات
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>النشاط</th>
+                                <th>التفاصيل</th>
+                                <th>IP</th>
+                                <th>التاريخ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for activity in activities %}
+                            <tr>
+                                <td>
+                                    <span class="badge {% if activity.activity_type == 'login' %}bg-success{% elif activity.activity_type == 'logout' %}bg-secondary{% elif activity.activity_type == 'download' %}bg-info{% elif activity.activity_type == 'upload' %}bg-primary{% else %}bg-light text-dark{% endif %}">
+                                        {{ activity.activity_type }}
+                                    </span>
+                                </td>
+                                <td>{{ activity.description|default:"-"|truncatewords:8 }}</td>
+                                <td><code>{{ activity.ip_address|default:"-" }}</code></td>
+                                <td>{{ activity.activity_time|date:"Y/m/d H:i" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">لا توجد نشاطات مسجلة</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

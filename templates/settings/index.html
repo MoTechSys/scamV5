@@ -1,0 +1,411 @@
+{% extends 'layouts/dashboard_base.html' %}
+{% load static %}
+{% load permissions %}
+
+{#
+إعدادات النظام - System Settings
+S-ACM - Smart Academic Content Management System
+#}
+
+{% block page_title %}الإعدادات{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">الإعدادات</li>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    {# ========== Page Header ========== #}
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="page-icon bg-secondary-subtle text-secondary rounded-3 p-3">
+            <i class="bi bi-gear fs-4"></i>
+        </div>
+        <div>
+            <h4 class="mb-0 fw-bold">إعدادات النظام</h4>
+            <p class="text-muted mb-0 small">تخصيص إعدادات النظام والتفضيلات</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {# ========== Settings Navigation ========== #}
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    <div class="nav flex-column nav-pills" id="settingsTabs" role="tablist">
+                        <button class="nav-link active text-start rounded-0" id="general-tab" 
+                                data-bs-toggle="pill" data-bs-target="#general" type="button">
+                            <i class="bi bi-sliders me-2"></i>عام
+                        </button>
+                        <button class="nav-link text-start rounded-0" id="notifications-tab" 
+                                data-bs-toggle="pill" data-bs-target="#notifications" type="button">
+                            <i class="bi bi-bell me-2"></i>الإشعارات
+                        </button>
+                        <button class="nav-link text-start rounded-0" id="security-tab" 
+                                data-bs-toggle="pill" data-bs-target="#security" type="button">
+                            <i class="bi bi-shield-lock me-2"></i>الأمان
+                        </button>
+                        <button class="nav-link text-start rounded-0" id="academic-tab" 
+                                data-bs-toggle="pill" data-bs-target="#academic" type="button">
+                            <i class="bi bi-mortarboard me-2"></i>الإعدادات الأكاديمية
+                        </button>
+                        <button class="nav-link text-start rounded-0" id="ai-tab" 
+                                data-bs-toggle="pill" data-bs-target="#ai" type="button">
+                            <i class="bi bi-stars me-2"></i>الذكاء الاصطناعي
+                        </button>
+                        <button class="nav-link text-start rounded-0" id="backup-tab" 
+                                data-bs-toggle="pill" data-bs-target="#backup" type="button">
+                            <i class="bi bi-cloud-arrow-up me-2"></i>النسخ الاحتياطي
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# ========== Settings Content ========== #}
+        <div class="col-lg-9">
+            <div class="tab-content" id="settingsTabsContent">
+                {# General Settings #}
+                <div class="tab-pane fade show active" id="general" role="tabpanel">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0"><i class="bi bi-sliders me-2"></i>الإعدادات العامة</h6>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="section" value="general">
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">اسم النظام</label>
+                                    <input type="text" class="form-control" name="site_name" 
+                                           value="S-ACM">
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">وصف النظام</label>
+                                    <textarea class="form-control" name="site_description" rows="2">نظام إدارة المحتوى الأكاديمي الذكي</textarea>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">البريد الإلكتروني للدعم</label>
+                                    <input type="email" class="form-control" name="support_email" 
+                                           value="support@s-acm.edu">
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">المنطقة الزمنية</label>
+                                    <select class="form-select" name="timezone">
+                                        <option value="Asia/Riyadh" selected>الرياض (GMT+3)</option>
+                                        <option value="Asia/Dubai">دبي (GMT+4)</option>
+                                        <option value="Africa/Cairo">القاهرة (GMT+2)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="maintenance_mode" 
+                                               name="maintenance_mode">
+                                        <label class="form-check-label" for="maintenance_mode">وضع الصيانة</label>
+                                    </div>
+                                    <small class="text-muted">تفعيل هذا الخيار سيمنع المستخدمين من الوصول للنظام</small>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-lg me-1"></i>حفظ الإعدادات
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                {# Notifications Settings #}
+                <div class="tab-pane fade" id="notifications" role="tabpanel">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0"><i class="bi bi-bell me-2"></i>إعدادات الإشعارات</h6>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="section" value="notifications">
+                                
+                                <h6 class="text-muted mb-3">إشعارات البريد الإلكتروني</h6>
+                                
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="email_new_file" 
+                                               name="email_new_file" checked>
+                                        <label class="form-check-label" for="email_new_file">إشعار عند رفع ملف جديد</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="email_new_announcement" 
+                                               name="email_new_announcement" checked>
+                                        <label class="form-check-label" for="email_new_announcement">إشعار عند إعلان جديد</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="email_weekly_digest" 
+                                               name="email_weekly_digest">
+                                        <label class="form-check-label" for="email_weekly_digest">ملخص أسبوعي</label>
+                                    </div>
+                                </div>
+                                
+                                <hr>
+                                
+                                <h6 class="text-muted mb-3">إعدادات SMTP</h6>
+                                
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-8">
+                                        <label class="form-label">خادم SMTP</label>
+                                        <input type="text" class="form-control" name="smtp_host" 
+                                               value="smtp.example.com">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">المنفذ</label>
+                                        <input type="number" class="form-control" name="smtp_port" 
+                                               value="587">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">اسم المستخدم</label>
+                                        <input type="text" class="form-control" name="smtp_user" 
+                                               value="">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">كلمة المرور</label>
+                                        <input type="password" class="form-control" name="smtp_password" 
+                                               placeholder="••••••••">
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-lg me-1"></i>حفظ الإعدادات
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                {# Security Settings #}
+                <div class="tab-pane fade" id="security" role="tabpanel">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0"><i class="bi bi-shield-lock me-2"></i>إعدادات الأمان</h6>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="section" value="security">
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">الحد الأدنى لطول كلمة المرور</label>
+                                    <input type="number" class="form-control" name="min_password_length" 
+                                           value="8" min="6" max="20">
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">مدة انتهاء الجلسة (بالدقائق)</label>
+                                    <input type="number" class="form-control" name="session_timeout" 
+                                           value="60" min="5">
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">عدد محاولات تسجيل الدخول الفاشلة قبل الحظر</label>
+                                    <input type="number" class="form-control" name="max_login_attempts" 
+                                           value="5" min="3">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="require_strong_password" 
+                                               name="require_strong_password" checked>
+                                        <label class="form-check-label" for="require_strong_password">
+                                            تتطلب كلمة مرور قوية (أحرف كبيرة وصغيرة وأرقام ورموز)
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="two_factor_auth" 
+                                               name="two_factor_auth">
+                                        <label class="form-check-label" for="two_factor_auth">
+                                            تفعيل المصادقة الثنائية
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-lg me-1"></i>حفظ الإعدادات
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                {# Academic Settings #}
+                <div class="tab-pane fade" id="academic" role="tabpanel">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0"><i class="bi bi-mortarboard me-2"></i>الإعدادات الأكاديمية</h6>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="section" value="academic">
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">الفصل الدراسي الحالي</label>
+                                    <select class="form-select" name="current_semester">
+                                        <option value="1" selected>الفصل الأول 1445-1446</option>
+                                        <option value="2">الفصل الثاني 1445-1446</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">العام الأكاديمي</label>
+                                    <input type="text" class="form-control" name="academic_year" 
+                                           value="1445-1446">
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">الحد الأقصى لحجم الملف (ميجابايت)</label>
+                                    <input type="number" class="form-control" name="max_file_size" 
+                                           value="100" min="1">
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">أنواع الملفات المسموحة</label>
+                                    <input type="text" class="form-control" name="allowed_file_types" 
+                                           value="pdf,doc,docx,ppt,pptx,xls,xlsx,zip,rar,mp4,mp3,jpg,png">
+                                    <small class="text-muted">افصل بين الأنواع بفاصلة</small>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-lg me-1"></i>حفظ الإعدادات
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                {# AI Settings #}
+                <div class="tab-pane fade" id="ai" role="tabpanel">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0"><i class="bi bi-stars me-2"></i>إعدادات الذكاء الاصطناعي</h6>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="section" value="ai">
+                                
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="ai_enabled" 
+                                               name="ai_enabled" checked>
+                                        <label class="form-check-label" for="ai_enabled">تفعيل ميزات الذكاء الاصطناعي</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">مزود خدمة AI</label>
+                                    <select class="form-select" name="ai_provider">
+                                        <option value="google" selected>Google AI</option>
+                                        <option value="openai">OpenAI</option>
+                                        <option value="anthropic">Anthropic</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">مفتاح API</label>
+                                    <input type="password" class="form-control" name="ai_api_key" 
+                                           placeholder="sk-...">
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">الحد اليومي للاستخدام (لكل مستخدم)</label>
+                                    <input type="number" class="form-control" name="ai_daily_limit" 
+                                           value="50" min="1">
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-lg me-1"></i>حفظ الإعدادات
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                {# Backup Settings #}
+                <div class="tab-pane fade" id="backup" role="tabpanel">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0"><i class="bi bi-cloud-arrow-up me-2"></i>النسخ الاحتياطي</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info mb-4">
+                                <i class="bi bi-info-circle me-2"></i>
+                                يمكنك إنشاء نسخة احتياطية من قاعدة البيانات والملفات
+                            </div>
+                            
+                            <div class="d-flex gap-3 mb-4">
+                                <button type="button" class="btn btn-primary" id="createBackupBtn">
+                                    <i class="bi bi-cloud-arrow-up me-1"></i>إنشاء نسخة احتياطية
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary">
+                                    <i class="bi bi-cloud-arrow-down me-1"></i>استعادة نسخة احتياطية
+                                </button>
+                            </div>
+                            
+                            <h6 class="text-muted mb-3">آخر النسخ الاحتياطية</h6>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>التاريخ</th>
+                                            <th>الحجم</th>
+                                            <th>النوع</th>
+                                            <th>الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted py-4">
+                                                <i class="bi bi-cloud-slash fs-3 d-block mb-2"></i>
+                                                لا توجد نسخ احتياطية
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('createBackupBtn')?.addEventListener('click', function() {
+    if (confirm('هل تريد إنشاء نسخة احتياطية جديدة؟')) {
+        this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>جاري الإنشاء...';
+        this.disabled = true;
+        
+        // Simulate backup creation
+        setTimeout(() => {
+            alert('تم إنشاء النسخة الاحتياطية بنجاح');
+            this.innerHTML = '<i class="bi bi-cloud-arrow-up me-1"></i>إنشاء نسخة احتياطية';
+            this.disabled = false;
+        }, 2000);
+    }
+});
+</script>
+{% endblock %}

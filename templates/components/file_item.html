@@ -1,0 +1,163 @@
+{# File Item Component - عنصر الملف #}
+
+<div class="file-item card border-0 shadow-sm mb-2">
+    <div class="card-body py-3">
+        <div class="d-flex align-items-center gap-3">
+            {# File Icon #}
+            <div class="file-icon">
+                {% if file.is_pdf %}
+                <div class="icon-wrapper bg-danger-subtle text-danger rounded-3 p-2">
+                    <i class="bi bi-file-earmark-pdf fs-4"></i>
+                </div>
+                {% elif file.is_video %}
+                <div class="icon-wrapper bg-primary-subtle text-primary rounded-3 p-2">
+                    <i class="bi bi-play-circle fs-4"></i>
+                </div>
+                {% elif file.is_image %}
+                <div class="icon-wrapper bg-success-subtle text-success rounded-3 p-2">
+                    <i class="bi bi-file-earmark-image fs-4"></i>
+                </div>
+                {% elif file.file_extension == '.docx' or file.file_extension == '.doc' %}
+                <div class="icon-wrapper bg-info-subtle text-info rounded-3 p-2">
+                    <i class="bi bi-file-earmark-word fs-4"></i>
+                </div>
+                {% elif file.file_extension == '.pptx' or file.file_extension == '.ppt' %}
+                <div class="icon-wrapper bg-warning-subtle text-warning rounded-3 p-2">
+                    <i class="bi bi-file-earmark-ppt fs-4"></i>
+                </div>
+                {% elif file.content_type == 'external_link' %}
+                <div class="icon-wrapper bg-secondary-subtle text-secondary rounded-3 p-2">
+                    <i class="bi bi-link-45deg fs-4"></i>
+                </div>
+                {% else %}
+                <div class="icon-wrapper bg-light text-muted rounded-3 p-2">
+                    <i class="bi bi-file-earmark fs-4"></i>
+                </div>
+                {% endif %}
+            </div>
+            
+            {# File Info #}
+            <div class="file-info flex-grow-1">
+                <h6 class="mb-1">{{ file.title }}</h6>
+                <div class="d-flex flex-wrap gap-2 text-muted small">
+                    {# File Type Badge #}
+                    <span class="badge bg-light text-dark">
+                        {{ file.get_file_type_display }}
+                    </span>
+                    
+                    {# File Size #}
+                    {% if file.file_size %}
+                    <span>
+                        <i class="bi bi-hdd"></i>
+                        {% if file.file_size < 1024 %}
+                        {{ file.file_size }} بايت
+                        {% elif file.file_size < 1048576 %}
+                        {{ file.file_size|floatformat:1|divisibleby:1024 }} كيلوبايت
+                        {% else %}
+                        {{ file.file_size|floatformat:1|divisibleby:1048576 }} ميجابايت
+                        {% endif %}
+                    </span>
+                    {% endif %}
+                    
+                    {# Upload Date #}
+                    <span>
+                        <i class="bi bi-calendar"></i>
+                        {{ file.upload_date|date:"Y/m/d" }}
+                    </span>
+                    
+                    {# Uploader #}
+                    {% if show_uploader and file.uploader %}
+                    <span>
+                        <i class="bi bi-person"></i>
+                        {{ file.uploader.full_name }}
+                    </span>
+                    {% endif %}
+                </div>
+                
+                {# Stats #}
+                {% if show_stats %}
+                <div class="mt-2 d-flex gap-3 small text-muted">
+                    <span><i class="bi bi-eye"></i> {{ file.view_count }} مشاهدة</span>
+                    <span><i class="bi bi-download"></i> {{ file.download_count }} تحميل</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            {# Actions #}
+            {% if show_actions %}
+            <div class="file-actions d-flex gap-2">
+                {# View/Download Button #}
+                {% if file.content_type == 'external_link' %}
+                <a href="{{ file.external_link }}" target="_blank" class="btn btn-sm btn-outline-primary" title="فتح الرابط">
+                    <i class="bi bi-box-arrow-up-left"></i>
+                </a>
+                {% else %}
+                <a href="{% url 'courses:file_download' file.id %}" class="btn btn-sm btn-outline-primary" title="تحميل">
+                    <i class="bi bi-download"></i>
+                </a>
+                {% endif %}
+                
+                {# AI Features #}
+                {% if file.is_pdf or file.file_extension == '.docx' %}
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" title="ميزات AI">
+                        <i class="bi bi-stars"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'ai_features:summarize' file_id=file.id %}">
+                            <i class="bi bi-card-text me-2"></i>تلخيص
+                        </a></li>
+                        <li><a class="dropdown-item" href="{% url 'ai_features:questions' file_id=file.id %}">
+                            <i class="bi bi-question-circle me-2"></i>توليد أسئلة
+                        </a></li>
+                        <li><a class="dropdown-item" href="{% url 'ai_features:ask_document' file_id=file.id %}">
+                            <i class="bi bi-chat-dots me-2"></i>اسأل المستند
+                        </a></li>
+                    </ul>
+                </div>
+                {% endif %}
+                
+                {# Edit Button #}
+                {% if can_edit %}
+                <a href="{% url 'courses:file_update' file.id %}" class="btn btn-sm btn-outline-secondary" title="تعديل">
+                    <i class="bi bi-pencil"></i>
+                </a>
+                {% endif %}
+                
+                {# Delete Button #}
+                {% if can_delete %}
+                <button type="button" class="btn btn-sm btn-outline-danger" 
+                        data-bs-toggle="modal" data-bs-target="#deleteModal{{ file.id }}" title="حذف">
+                    <i class="bi bi-trash"></i>
+                </button>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{# Delete Confirmation Modal #}
+{% if can_delete %}
+<div class="modal fade" id="deleteModal{{ file.id }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تأكيد الحذف</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>هل أنت متأكد من حذف الملف <strong>{{ file.title }}</strong>؟</p>
+                <p class="text-muted small">هذا الإجراء لا يمكن التراجع عنه.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <form action="{% url 'courses:file_delete' file.id %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">حذف</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}

@@ -1,0 +1,43 @@
+{#
+Course Card Component
+S-ACM - Smart Academic Content Management System
+
+Usage:
+{% include 'components/course_card.html' with course=course show_manage_btn=True %}
+
+Parameters:
+- course: كائن المقرر
+- show_manage_btn: إظهار زر الإدارة (للمدرسين والمسؤولين)
+- show_upload_btn: إظهار زر رفع ملف (للمدرسين)
+#}
+
+<div class="col-md-6 col-lg-4">
+    <div class="card course-card h-100 hover-shadow">
+        <div class="card-body">
+            <span class="course-code badge bg-secondary mb-2">{{ course.course_code }}</span>
+            <h5 class="course-name">{{ course.course_name }}</h5>
+            <p class="course-meta text-muted mb-0">
+                <i class="bi bi-layers me-1"></i>{{ course.level.level_name|default:"غير محدد" }}
+                {% if course.files.count %}
+                <span class="mx-2">•</span>
+                <i class="bi bi-file-earmark me-1"></i>{{ course.files.count }} ملف
+                {% endif %}
+            </p>
+        </div>
+        <div class="card-footer bg-transparent d-flex gap-2">
+            <a href="{% url 'courses:course_detail' course.pk %}" class="btn btn-primary btn-sm flex-fill">
+                <i class="bi bi-folder-open me-1"></i>فتح المقرر
+            </a>
+            {% if show_upload_btn %}
+            <a href="{% url 'courses:file_upload' %}?course={{ course.pk }}" class="btn btn-success btn-sm" title="رفع ملف">
+                <i class="bi bi-upload"></i>
+            </a>
+            {% endif %}
+            {% if show_manage_btn %}
+            <a href="{% url 'courses:course_edit' course.pk %}" class="btn btn-outline-secondary btn-sm" title="تعديل">
+                <i class="bi bi-pencil"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>

@@ -1,0 +1,26 @@
+{# Empty State Component - حالة عدم وجود بيانات #}
+
+{% with size=size|default:'md' %}
+<div class="empty-state text-center py-{% if size == 'sm' %}3{% elif size == 'lg' %}5{% else %}4{% endif %}">
+    <div class="empty-state-icon mb-3">
+        <i class="bi {{ icon|default:'bi-inbox' }} {% if size == 'sm' %}fs-2{% elif size == 'lg' %}display-1{% else %}display-4{% endif %} text-muted"></i>
+    </div>
+    
+    <h5 class="{% if size == 'sm' %}h6{% elif size == 'lg' %}h4{% else %}h5{% endif %} text-muted mb-2">
+        {{ title|default:"لا توجد بيانات" }}
+    </h5>
+    
+    {% if message %}
+    <p class="text-muted {% if size == 'sm' %}small{% endif %} mb-{% if action_url %}3{% else %}0{% endif %}">
+        {{ message }}
+    </p>
+    {% endif %}
+    
+    {% if action_url and action_text %}
+    <a href="{{ action_url }}" class="btn btn-primary {% if size == 'sm' %}btn-sm{% endif %}">
+        {% if action_icon %}<i class="bi {{ action_icon }} me-1"></i>{% endif %}
+        {{ action_text }}
+    </a>
+    {% endif %}
+</div>
+{% endwith %}

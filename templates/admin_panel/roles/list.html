@@ -1,0 +1,132 @@
+{% extends 'layouts/dashboard_base.html' %}
+
+{% block page_title %}إدارة الأدوار{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    {# Header #}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1"><i class="bi bi-shield-lock me-2"></i>إدارة الأدوار</h4>
+            <p class="text-muted mb-0">إنشاء وتعديل أدوار المستخدمين وصلاحياتهم</p>
+        </div>
+        <a href="{% url 'accounts:admin_role_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>إضافة دور جديد
+        </a>
+    </div>
+
+    {# Stats Cards #}
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-person-badge fs-1 me-3"></i>
+                        <div>
+                            <h3 class="mb-0">{{ roles|length }}</h3>
+                            <span>الأدوار</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-key fs-1 me-3"></i>
+                        <div>
+                            <h3 class="mb-0">{{ total_permissions }}</h3>
+                            <span>الصلاحيات</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 bg-info text-white">
+                <div class="card-body">
+                    <a href="{% url 'accounts:admin_permissions' %}"
+                        class="text-white text-decoration-none d-flex align-items-center">
+                        <i class="bi bi-list-check fs-1 me-3"></i>
+                        <div>
+                            <span class="d-block">عرض الصلاحيات</span>
+                            <small>→ انتقل</small>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Roles Table #}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>الكود</th>
+                            <th>اسم العرض</th>
+                            <th>النوع</th>
+                            <th>المستخدمين</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for role in roles %}
+                        <tr>
+                            <td>
+                                <code>{{ role.code }}</code>
+                            </td>
+                            <td>
+                                <strong>{{ role.display_name }}</strong>
+                                {% if role.description %}
+                                <br><small class="text-muted">{{ role.description|truncatechars:50 }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if role.is_system %}
+                                <span class="badge bg-warning text-dark">نظام</span>
+                                {% else %}
+                                <span class="badge bg-secondary">مخصص</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-primary">{{ role.users_count }}</span>
+                            </td>
+                            <td>
+                                {% if role.is_active %}
+                                <span class="badge bg-success">نشط</span>
+                                {% else %}
+                                <span class="badge bg-danger">معطل</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'accounts:admin_role_permissions' role.pk %}"
+                                        class="btn btn-outline-primary" title="الصلاحيات">
+                                        <i class="bi bi-key"></i>
+                                    </a>
+                                    <a href="{% url 'accounts:admin_role_edit' role.pk %}"
+                                        class="btn btn-outline-secondary" title="تعديل">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">
+                                لا توجد أدوار
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

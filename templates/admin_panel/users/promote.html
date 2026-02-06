@@ -1,0 +1,170 @@
+{% extends 'layouts/dashboard_base.html' %}
+{% load static %}
+
+{% block page_title %}ترقية الطلاب{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'accounts:admin_dashboard' %}">لوحة التحكم</a></li>
+            <li class="breadcrumb-item active">ترقية الطلاب</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-arrow-up-circle me-2"></i>ترقية الطلاب إلى المستوى التالي
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                    
+                    <div class="alert alert-warning">
+                        <h6><i class="bi bi-exclamation-triangle me-1"></i>تحذير هام:</h6>
+                        <p class="mb-0">هذه العملية ستقوم بترقية جميع الطلاب في المستوى المحدد إلى المستوى التالي. تأكد من اختيارك قبل المتابعة.</p>
+                    </div>
+                    
+                    {# إحصائيات الطلاب حسب المستوى #}
+                    <div class="card bg-light mb-4">
+                        <div class="card-header">
+                            <i class="bi bi-bar-chart me-1"></i>إحصائيات الطلاب حسب المستوى
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>المستوى</th>
+                                            <th>عدد الطلاب</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for level in levels %}
+                                        <tr>
+                                            <td>{{ level.level_name }}</td>
+                                            <td><span class="badge bg-primary">{{ level.students.count }}</span></td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="2" class="text-center text-muted">لا توجد مستويات</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_from_level" class="form-label">من المستوى <span class="text-danger">*</span></label>
+                                <select name="from_level" id="id_from_level" class="form-select" required>
+                                    <option value="">اختر المستوى...</option>
+                                    {% for level in levels %}
+                                    <option value="{{ level.pk }}" data-number="{{ level.level_number }}">{{ level.level_name }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.from_level.errors %}
+                                <div class="invalid-feedback d-block">{{ form.from_level.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="id_to_level" class="form-label">إلى المستوى <span class="text-danger">*</span></label>
+                                <select name="to_level" id="id_to_level" class="form-select" required>
+                                    <option value="">اختر المستوى...</option>
+                                    {% for level in levels %}
+                                    <option value="{{ level.pk }}" data-number="{{ level.level_number }}">{{ level.level_name }}</option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.to_level.errors %}
+                                <div class="invalid-feedback d-block">{{ form.to_level.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_major" class="form-label">التخصص (اختياري)</label>
+                            <select name="major" id="id_major" class="form-select">
+                                <option value="">جميع التخصصات</option>
+                                {% for major in majors %}
+                                <option value="{{ major.pk }}">{{ major.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">اتركه فارغاً لترقية جميع التخصصات</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input type="checkbox" name="confirm" id="confirm" class="form-check-input" required>
+                                <label class="form-check-label" for="confirm">
+                                    أؤكد أنني أريد ترقية جميع الطلاب في المستوى المحدد
+                                </label>
+                            </div>
+                        </div>
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success flex-fill">
+                                <i class="bi bi-arrow-up-circle me-1"></i>تنفيذ الترقية
+                            </button>
+                            <a href="{% url 'accounts:admin_dashboard' %}" class="btn btn-outline-secondary">
+                                إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fromLevelSelect = document.getElementById('id_from_level');
+    const toLevelSelect = document.getElementById('id_to_level');
+    
+    // عند تغيير المستوى المصدر، اقترح المستوى التالي
+    fromLevelSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const currentNumber = parseInt(selectedOption.dataset.number);
+        
+        if (currentNumber) {
+            // ابحث عن المستوى التالي
+            const nextNumber = currentNumber + 1;
+            const toOptions = toLevelSelect.options;
+            
+            for (let i = 0; i < toOptions.length; i++) {
+                if (parseInt(toOptions[i].dataset.number) === nextNumber) {
+                    toLevelSelect.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

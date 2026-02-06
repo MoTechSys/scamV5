@@ -1,0 +1,66 @@
+{#
+#}
+{% load permissions %}
+
+<div class="card border-0 shadow-sm h-100">
+    <div class="card-header bg-white border-bottom">
+        <h6 class="mb-0">
+            <i class="bi bi-lightning-charge me-2 text-warning"></i>إجراءات سريعة
+        </h6>
+    </div>
+    <div class="card-body">
+        <div class="d-grid gap-2">
+            {# إضافة مستخدم - للمسؤولين #}
+            {% if perms.add_user or request.user.is_admin %}
+            <a href="{% url 'accounts:admin_user_create' %}" class="btn btn-outline-primary text-start">
+                <i class="bi bi-person-plus me-2"></i>إضافة مستخدم جديد
+            </a>
+            {% endif %}
+            
+            {# استيراد مستخدمين - للمسؤولين #}
+            {% if perms.import_users or request.user.is_admin %}
+            <a href="{% url 'accounts:admin_user_import' %}" class="btn btn-outline-primary text-start">
+                <i class="bi bi-file-earmark-arrow-up me-2"></i>استيراد مستخدمين (CSV)
+            </a>
+            {% endif %}
+            
+            {# إضافة مقرر - للمسؤولين #}
+            {% if perms.add_course or request.user.is_admin %}
+            <a href="{% url 'courses:course_create' %}" class="btn btn-outline-success text-start">
+                <i class="bi bi-book me-2"></i>إضافة مقرر جديد
+            </a>
+            {% endif %}
+            
+            {# رفع ملف - للمدرسين والمسؤولين #}
+            {% if perms.upload_file or request.user.is_instructor or request.user.is_admin %}
+            <a href="{% url 'courses:file_upload_select' %}" class="btn btn-outline-success text-start">
+                <i class="bi bi-upload me-2"></i>رفع ملف جديد
+            </a>
+            {% endif %}
+            
+            {# إرسال إشعار - للمدرسين والمسؤولين #}
+            {% if perms.send_notification or request.user.is_instructor or request.user.is_admin %}
+            <a href="{% url 'notifications:admin_create' %}" class="btn btn-outline-info text-start">
+                <i class="bi bi-bell me-2"></i>إرسال إشعار
+            </a>
+            {% endif %}
+            
+            {# إدارة الأدوار - للمسؤولين #}
+            {% if perms.manage_roles or request.user.is_admin %}
+            <a href="{% url 'accounts:admin_roles' %}" class="btn btn-outline-secondary text-start">
+                <i class="bi bi-shield-lock me-2"></i>إدارة الأدوار والصلاحيات
+            </a>
+            {% endif %}
+            
+            {# عرض المقررات - للجميع #}
+            <a href="{% url 'courses:course_list' %}" class="btn btn-outline-dark text-start">
+                <i class="bi bi-collection me-2"></i>عرض المقررات
+            </a>
+            
+            {# الإشعارات - للجميع #}
+            <a href="{% url 'notifications:list' %}" class="btn btn-outline-dark text-start">
+                <i class="bi bi-bell me-2"></i>عرض الإشعارات
+            </a>
+        </div>
+    </div>
+</div>

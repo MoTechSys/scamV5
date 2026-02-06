@@ -1,0 +1,215 @@
+{% extends 'layouts/dashboard_base.html' %}
+{% load static %}
+{% load permissions %}
+
+{#
+الملف الشخصي - User Profile
+S-ACM - Smart Academic Content Management System
+#}
+
+{% block page_title %}الملف الشخصي{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">الملف الشخصي</li>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <div class="row g-4">
+        {# ========== Profile Card ========== #}
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    {# Avatar #}
+                    <div class="avatar-circle bg-primary text-white mx-auto mb-3" 
+                         style="width: 100px; height: 100px; font-size: 2.5rem;">
+                        {{ request.user.full_name|slice:":1"|upper }}
+                    </div>
+                    
+                    <h5 class="mb-1">{{ request.user.full_name }}</h5>
+                    <p class="text-muted mb-3">{{ user_role|default:"مستخدم" }}</p>
+                    
+                    <div class="d-flex justify-content-center gap-2 mb-4">
+                        {% if request.user.is_active %}
+                        <span class="badge bg-success">نشط</span>
+                        {% else %}
+                        <span class="badge bg-secondary">غير نشط</span>
+                        {% endif %}
+                        {% if request.user.is_verified %}
+                        <span class="badge bg-info">موثق</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'accounts:profile_edit' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-pencil me-1"></i>تعديل الملف الشخصي
+                        </a>
+                        <a href="{% url 'accounts:change_password' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-key me-1"></i>تغيير كلمة المرور
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            {# Quick Stats #}
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="bi bi-bar-chart me-2"></i>إحصائياتي</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">المقررات</span>
+                        <strong>{{ my_courses_count|default:0 }}</strong>
+                    </div>
+                    {% if request.user.is_instructor %}
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">الملفات المرفوعة</span>
+                        <strong>{{ my_files_count|default:0 }}</strong>
+                    </div>
+                    {% endif %}
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">التحميلات</span>
+                        <strong>{{ my_downloads_count|default:0 }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">تاريخ الانضمام</span>
+                        <strong>{{ request.user.date_joined|date:"Y/m/d" }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# ========== Profile Details ========== #}
+        <div class="col-lg-8">
+            {# Personal Info #}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0"><i class="bi bi-person me-2"></i>المعلومات الشخصية</h6>
+                    <a href="{% url 'accounts:profile_edit' %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">الاسم الكامل</label>
+                            <p class="mb-0 fw-medium">{{ request.user.full_name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">الرقم الأكاديمي</label>
+                            <p class="mb-0 fw-medium"><code>{{ request.user.academic_id }}</code></p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">البريد الإلكتروني</label>
+                            <p class="mb-0 fw-medium">{{ request.user.email|default:"-" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">رقم الهاتف</label>
+                            <p class="mb-0 fw-medium">{{ request.user.phone|default:"-" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Academic Info #}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="bi bi-mortarboard me-2"></i>المعلومات الأكاديمية</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">الدور</label>
+                            <p class="mb-0">
+                                <span class="badge bg-{{ request.user.role.color|default:'primary' }}">
+                                    {{ request.user.role.role_name|default:"غير محدد" }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">التخصص</label>
+                            <p class="mb-0 fw-medium">{{ request.user.major.major_name|default:"-" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">المستوى</label>
+                            <p class="mb-0 fw-medium">{{ request.user.level.level_name|default:"-" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">الفصل الدراسي الحالي</label>
+                            <p class="mb-0 fw-medium">{{ current_semester.semester_name|default:"-" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# My Courses #}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0"><i class="bi bi-book me-2"></i>مقرراتي</h6>
+                    <a href="{% url 'courses:course_list' %}" class="btn btn-sm btn-outline-primary">عرض الكل</a>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for course in my_courses %}
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center gap-3 p-3 bg-light rounded">
+                                <div class="bg-primary-subtle text-primary rounded p-2">
+                                    <i class="bi bi-book"></i>
+                                </div>
+                                <div>
+                                    <a href="{% url 'courses:course_detail' course.id %}" class="fw-medium text-decoration-none">
+                                        {{ course.course_name }}
+                                    </a>
+                                    <br><small class="text-muted">{{ course.course_code }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            {% include 'components/empty_state.html' with icon="bi-book" title="لا توجد مقررات" size="sm" %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            {# Recent Activity #}
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="bi bi-activity me-2"></i>آخر النشاطات</h6>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for activity in my_activities %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-3">
+                                {% if activity.activity_type == 'login' %}
+                                <i class="bi bi-box-arrow-in-left text-success"></i>
+                                {% elif activity.activity_type == 'file_download' %}
+                                <i class="bi bi-download text-primary"></i>
+                                {% elif activity.activity_type == 'file_upload' %}
+                                <i class="bi bi-upload text-info"></i>
+                                {% else %}
+                                <i class="bi bi-circle text-muted"></i>
+                                {% endif %}
+                                <div>
+                                    <span>{{ activity.get_activity_type_display }}</span>
+                                    {% if activity.description %}
+                                    <br><small class="text-muted">{{ activity.description|truncatechars:50 }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <small class="text-muted">{{ activity.activity_time|timesince }}</small>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item text-center text-muted py-4">
+                            لا توجد نشاطات مسجلة
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

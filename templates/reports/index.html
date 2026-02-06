@@ -1,0 +1,381 @@
+{% extends 'layouts/dashboard_base.html' %}
+{% load static %}
+{% load permissions %}
+
+{#
+التقارير والإحصائيات - Reports & Analytics
+S-ACM - Smart Academic Content Management System
+#}
+
+{% block page_title %}التقارير{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">التقارير</li>
+{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+.report-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+.report-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+}
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    {# ========== Page Header ========== #}
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-icon bg-success-subtle text-success rounded-3 p-3">
+                <i class="bi bi-bar-chart fs-4"></i>
+            </div>
+            <div>
+                <h4 class="mb-0 fw-bold">التقارير والإحصائيات</h4>
+                <p class="text-muted mb-0 small">تحليل بيانات النظام وإنشاء التقارير</p>
+            </div>
+        </div>
+        
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#exportModal">
+                <i class="bi bi-download me-1"></i>تصدير تقرير
+            </button>
+        </div>
+    </div>
+
+    {# ========== Date Filter ========== #}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small">من تاريخ</label>
+                    <input type="date" class="form-control" name="date_from" value="{{ request.GET.date_from }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">إلى تاريخ</label>
+                    <input type="date" class="form-control" name="date_to" value="{{ request.GET.date_to }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">المستوى</label>
+                    <select class="form-select" name="level">
+                        <option value="">الكل</option>
+                        {% for level in levels %}
+                        <option value="{{ level.id }}" {% if request.GET.level == level.id|stringformat:"i" %}selected{% endif %}>
+                            {{ level.level_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">التخصص</label>
+                    <select class="form-select" name="major">
+                        <option value="">الكل</option>
+                        {% for major in majors %}
+                        <option value="{{ major.id }}" {% if request.GET.major == major.id|stringformat:"i" %}selected{% endif %}>
+                            {{ major.major_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel me-1"></i>تطبيق
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {# ========== Summary Stats ========== #}
+    <div class="row g-3 mb-4">
+        {% include 'components/stat_card.html' with title="إجمالي المستخدمين" value=stats.total_users icon="bi-people" color="primary" change=stats.users_change change_type=stats.users_change_type %}
+        {% include 'components/stat_card.html' with title="المقررات النشطة" value=stats.active_courses icon="bi-book" color="success" %}
+        {% include 'components/stat_card.html' with title="الملفات المرفوعة" value=stats.total_files icon="bi-file-earmark" color="info" change=stats.files_change change_type=stats.files_change_type %}
+        {% include 'components/stat_card.html' with title="إجمالي التحميلات" value=stats.total_downloads icon="bi-download" color="warning" %}
+    </div>
+
+    <div class="row g-4">
+        {# ========== Users Activity Chart ========== #}
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                        <i class="bi bi-graph-up me-2 text-primary"></i>نشاط المستخدمين
+                    </h6>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-secondary active" data-period="week">أسبوع</button>
+                        <button type="button" class="btn btn-outline-secondary" data-period="month">شهر</button>
+                        <button type="button" class="btn btn-outline-secondary" data-period="year">سنة</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="activityChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        {# ========== Users Distribution ========== #}
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-pie-chart me-2 text-success"></i>توزيع المستخدمين
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="usersDistributionChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        {# ========== Top Courses ========== #}
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-trophy me-2 text-warning"></i>أكثر المقررات نشاطاً
+                    </h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>المقرر</th>
+                                    <th>الملفات</th>
+                                    <th>التحميلات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for course in top_courses %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        <a href="{% url 'courses:course_detail' course.id %}">{{ course.course_name }}</a>
+                                    </td>
+                                    <td>{{ course.files_count }}</td>
+                                    <td>{{ course.downloads_count }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-3">لا توجد بيانات</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# ========== Downloads by File Type ========== #}
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-file-earmark-bar-graph me-2 text-info"></i>التحميلات حسب نوع الملف
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="fileTypesChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        {# ========== Recent Activity ========== #}
+        <div class="col-12">
+            {% include 'components/activity_log.html' with activities=recent_activities view_all_url=activity_log_url %}
+        </div>
+    </div>
+
+    {# ========== Quick Reports ========== #}
+    <h5 class="mt-5 mb-3">التقارير السريعة</h5>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm report-card" onclick="generateReport('users')">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-people display-4 text-primary mb-3"></i>
+                    <h6>تقرير المستخدمين</h6>
+                    <p class="text-muted small mb-0">قائمة بجميع المستخدمين وحالاتهم</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm report-card" onclick="generateReport('courses')">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-book display-4 text-success mb-3"></i>
+                    <h6>تقرير المقررات</h6>
+                    <p class="text-muted small mb-0">إحصائيات المقررات والملفات</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm report-card" onclick="generateReport('activity')">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-activity display-4 text-warning mb-3"></i>
+                    <h6>تقرير النشاط</h6>
+                    <p class="text-muted small mb-0">سجل نشاطات المستخدمين</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Export Modal #}
+<div class="modal fade" id="exportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تصدير تقرير</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'reports:export' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">نوع التقرير</label>
+                        <select class="form-select" name="report_type" required>
+                            <option value="users">تقرير المستخدمين</option>
+                            <option value="courses">تقرير المقررات</option>
+                            <option value="files">تقرير الملفات</option>
+                            <option value="activity">تقرير النشاط</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">صيغة التصدير</label>
+                        <select class="form-select" name="format" required>
+                            <option value="xlsx">Excel (XLSX)</option>
+                            <option value="csv">CSV</option>
+                            <option value="pdf">PDF</option>
+                        </select>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label">من تاريخ</label>
+                            <input type="date" class="form-control" name="date_from">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">إلى تاريخ</label>
+                            <input type="date" class="form-control" name="date_to">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-download me-1"></i>تصدير
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block dashboard_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Activity Chart
+    const activityCtx = document.getElementById('activityChart');
+    if (activityCtx) {
+        new Chart(activityCtx, {
+            type: 'line',
+            data: {
+                labels: {{ activity_labels|safe|default:'["السبت", "الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"]' }},
+                datasets: [{
+                    label: 'تسجيلات الدخول',
+                    data: {{ login_data|safe|default:'[12, 19, 3, 5, 2, 3, 7]' }},
+                    borderColor: 'rgba(13, 110, 253, 1)',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }, {
+                    label: 'التحميلات',
+                    data: {{ download_data|safe|default:'[8, 12, 6, 9, 11, 8, 14]' }},
+                    borderColor: 'rgba(25, 135, 84, 1)',
+                    backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+    
+    // Users Distribution Chart
+    const usersCtx = document.getElementById('usersDistributionChart');
+    if (usersCtx) {
+        new Chart(usersCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['طلاب', 'مدرسين', 'مسؤولين'],
+                datasets: [{
+                    data: [{{ stats.students|default:70 }}, {{ stats.instructors|default:20 }}, {{ stats.admins|default:10 }}],
+                    backgroundColor: [
+                        'rgba(13, 202, 240, 0.8)',
+                        'rgba(255, 193, 7, 0.8)',
+                        'rgba(220, 53, 69, 0.8)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+    
+    // File Types Chart
+    const fileTypesCtx = document.getElementById('fileTypesChart');
+    if (fileTypesCtx) {
+        new Chart(fileTypesCtx, {
+            type: 'bar',
+            data: {
+                labels: ['PDF', 'Word', 'PowerPoint', 'فيديو', 'أخرى'],
+                datasets: [{
+                    label: 'عدد التحميلات',
+                    data: {{ file_types_data|safe|default:'[45, 25, 30, 15, 10]' }},
+                    backgroundColor: [
+                        'rgba(220, 53, 69, 0.7)',
+                        'rgba(13, 110, 253, 0.7)',
+                        'rgba(255, 193, 7, 0.7)',
+                        'rgba(25, 135, 84, 0.7)',
+                        'rgba(108, 117, 125, 0.7)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+});
+
+function generateReport(type) {
+    window.location.href = '{% url "reports:generate" %}?type=' + type;
+}
+</script>
+{% endblock %}

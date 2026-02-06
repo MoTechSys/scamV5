@@ -1,0 +1,295 @@
+{% extends 'layouts/dashboard_base.html' %}
+{% load static %}
+{% load permissions %}
+
+{#
+تفاصيل المقرر الموحدة - Unified Course Detail
+S-ACM - Smart Academic Content Management System
+
+تعرض تفاصيل المقرر بناءً على صلاحيات المستخدم:
+- للطالب: عرض الملفات + ميزات AI
+- للمدرس: عرض الملفات + رفع ملفات + إدارة الملفات
+- للمسؤول: كل ما سبق + تعديل بيانات المقرر
+#}
+
+{% block page_title %}{{ course.course_name }}{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'courses:course_list' %}">المقررات</a></li>
+<li class="breadcrumb-item active">{{ course.course_name }}</li>
+{% endblock %}
+
+{% block page_actions %}
+{% if perms.upload_file or request.user.is_instructor or request.user.is_admin %}
+<a href="{% url 'courses:file_upload' course.id %}" class="btn btn-sm btn-success">
+    <i class="bi bi-upload me-1"></i>رفع ملف
+</a>
+{% endif %}
+{% if perms.edit_course or request.user.is_admin %}
+<a href="{% url 'courses:course_edit' course.id %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-pencil me-1"></i>تعديل
+</a>
+{% endif %}
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    {# ========== Course Header ========== #}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="course-icon bg-primary-subtle text-primary rounded-3 p-3">
+                            <i class="bi bi-book fs-3"></i>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <h4 class="mb-0">{{ course.course_name }}</h4>
+                                {% if course.semester.is_current %}
+                                <span class="badge bg-success">الفصل الحالي</span>
+                                {% else %}
+                                <span class="badge bg-secondary">أرشيف</span>
+                                {% endif %}
+                            </div>
+                            <p class="text-muted mb-2">
+                                <i class="bi bi-hash"></i> {{ course.course_code }}
+                            </p>
+                            {% if course.description %}
+                            <p class="mb-0">{{ course.description }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mt-3 mt-md-0">
+                    <div class="row g-2 text-center">
+                        <div class="col-4">
+                            <div class="p-2 bg-light rounded">
+                                <h5 class="mb-0 text-primary">{{ files_count|default:0 }}</h5>
+                                <small class="text-muted">ملف</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2 bg-light rounded">
+                                <h5 class="mb-0 text-success">{{ course.credit_hours }}</h5>
+                                <small class="text-muted">ساعات</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2 bg-light rounded">
+                                <h5 class="mb-0 text-info">{{ students_count|default:0 }}</h5>
+                                <small class="text-muted">طالب</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {# ========== Course Files ========== #}
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                        <i class="bi bi-folder me-2 text-warning"></i>ملفات المقرر
+                    </h6>
+                    <div class="d-flex gap-2">
+                        {# Filter Buttons #}
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-secondary active" data-filter="all">الكل</button>
+                            <button type="button" class="btn btn-outline-secondary" data-filter="pdf">PDF</button>
+                            <button type="button" class="btn btn-outline-secondary" data-filter="video">فيديو</button>
+                            <button type="button" class="btn btn-outline-secondary" data-filter="other">أخرى</button>
+                        </div>
+                        
+                        {% if perms.upload_file or request.user.is_instructor or request.user.is_admin %}
+                        <a href="{% url 'courses:file_upload' course.id %}" class="btn btn-sm btn-success">
+                            <i class="bi bi-upload"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    {# Files by Type #}
+                    {% if lecture_files %}
+                    <h6 class="text-muted small mb-3"><i class="bi bi-journal-text me-1"></i>المحاضرات</h6>
+                    {% for file in lecture_files %}
+                    {% include 'components/file_item.html' with file=file show_actions=True can_edit=can_manage_files can_delete=can_manage_files %}
+                    {% endfor %}
+                    {% endif %}
+                    
+                    {% if assignment_files %}
+                    <h6 class="text-muted small mb-3 mt-4"><i class="bi bi-file-earmark-check me-1"></i>الواجبات</h6>
+                    {% for file in assignment_files %}
+                    {% include 'components/file_item.html' with file=file show_actions=True can_edit=can_manage_files can_delete=can_manage_files %}
+                    {% endfor %}
+                    {% endif %}
+                    
+                    {% if reference_files %}
+                    <h6 class="text-muted small mb-3 mt-4"><i class="bi bi-book me-1"></i>المراجع</h6>
+                    {% for file in reference_files %}
+                    {% include 'components/file_item.html' with file=file show_actions=True can_edit=can_manage_files can_delete=can_manage_files %}
+                    {% endfor %}
+                    {% endif %}
+                    
+                    {% if other_files %}
+                    <h6 class="text-muted small mb-3 mt-4"><i class="bi bi-file-earmark me-1"></i>ملفات أخرى</h6>
+                    {% for file in other_files %}
+                    {% include 'components/file_item.html' with file=file show_actions=True can_edit=can_manage_files can_delete=can_manage_files %}
+                    {% endfor %}
+                    {% endif %}
+                    
+                    {% if not files %}
+                    {% include 'components/empty_state.html' with icon="bi-folder-x" title="لا توجد ملفات" message="لم يتم رفع أي ملفات لهذا المقرر بعد" action_url=upload_url action_text="رفع ملف" action_icon="bi-upload" %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# ========== Sidebar ========== #}
+        <div class="col-lg-4">
+            {# Course Info Card #}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-info-circle me-2 text-info"></i>معلومات المقرر
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm table-borderless mb-0">
+                        <tr>
+                            <td class="text-muted" style="width: 40%;">رمز المقرر</td>
+                            <td><strong>{{ course.course_code }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">المستوى</td>
+                            <td>{{ course.level.level_name|default:"غير محدد" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">الساعات</td>
+                            <td>{{ course.credit_hours }} ساعات</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">الفصل</td>
+                            <td>{{ course.semester.semester_name|default:"غير محدد" }}</td>
+                        </tr>
+                        {% if course.majors.all %}
+                        <tr>
+                            <td class="text-muted">التخصصات</td>
+                            <td>
+                                {% for major in course.majors.all %}
+                                <span class="badge bg-light text-dark">{{ major.major_name }}</span>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+
+            {# Instructors Card #}
+            {% if instructors %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-person-workspace me-2 text-warning"></i>المدرسين
+                    </h6>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for instructor in instructors %}
+                        <li class="list-group-item d-flex align-items-center gap-3">
+                            <div class="avatar-circle bg-warning-subtle text-warning" style="width: 36px; height: 36px; font-size: 0.8rem;">
+                                {{ instructor.full_name|slice:":1"|upper }}
+                            </div>
+                            <div>
+                                <div class="fw-medium">{{ instructor.full_name }}</div>
+                                <small class="text-muted">{{ instructor.email }}</small>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+
+            {# AI Features Card #}
+            {% if request.user.is_student or request.user.is_instructor %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-stars me-2 text-primary"></i>ميزات الذكاء الاصطناعي
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'ai_features:usage_stats' %}" class="btn btn-outline-primary text-start">
+                            <i class="bi bi-card-text me-2"></i>ميزات الذكاء الاصطناعي
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {# Quick Actions for Admin #}
+            {% if request.user.is_admin %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-gear me-2 text-secondary"></i>إجراءات الإدارة
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'courses:course_edit' course.id %}" class="btn btn-outline-secondary text-start">
+                            <i class="bi bi-pencil me-2"></i>تعديل المقرر
+                        </a>
+                        <a href="{% url 'courses:admin_instructor_assign' course.id %}" class="btn btn-outline-secondary text-start">
+                            <i class="bi bi-person-workspace me-2"></i>إدارة المدرسين
+                        </a>
+                        <button type="button" class="btn btn-outline-danger text-start" 
+                                data-bs-toggle="modal" data-bs-target="#deleteCourseModal">
+                            <i class="bi bi-trash me-2"></i>حذف المقرر
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{# Delete Course Modal #}
+{% if request.user.is_admin %}
+{% include 'components/modal_confirm.html' with modal_id="deleteCourseModal" title="حذف المقرر" message="هل أنت متأكد من حذف هذا المقرر؟" warning="سيتم حذف جميع الملفات والبيانات المرتبطة بهذا المقرر نهائياً." icon="bi-trash" form_action=delete_url %}
+{% endif %}
+{% endblock %}
+
+{% block dashboard_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // File filter functionality
+    const filterButtons = document.querySelectorAll('[data-filter]');
+    const fileItems = document.querySelectorAll('.file-item');
+    
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            filterButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            const filter = this.dataset.filter;
+            fileItems.forEach(item => {
+                if (filter === 'all') {
+                    item.style.display = '';
+                } else {
+                    // Add filter logic based on file type
+                    item.style.display = '';
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

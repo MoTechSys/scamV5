@@ -1,0 +1,66 @@
+{# Course Card Component - بطاقة المقرر الدراسي #}
+
+<div class="{% if compact %}col-12{% else %}col-md-6 col-lg-4{% endif %}">
+    <div class="card border-0 shadow-sm h-100 course-card">
+        <div class="card-body">
+            {# Course Header #}
+            <div class="d-flex align-items-start justify-content-between mb-3">
+                <div class="course-icon bg-primary-subtle text-primary rounded-3 p-2">
+                    <i class="bi bi-book fs-5"></i>
+                </div>
+                {% if course.semester.is_current %}
+                <span class="badge bg-success">الفصل الحالي</span>
+                {% else %}
+                <span class="badge bg-secondary">أرشيف</span>
+                {% endif %}
+            </div>
+            
+            {# Course Info #}
+            <h6 class="card-title mb-1">{{ course.course_name }}</h6>
+            <p class="text-muted small mb-2">
+                <i class="bi bi-hash"></i> {{ course.course_code }}
+            </p>
+            
+            {# Course Meta #}
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <span class="badge bg-light text-dark">
+                    <i class="bi bi-layers"></i> {{ course.level.level_name|default:"غير محدد" }}
+                </span>
+                {% if show_files_count %}
+                <span class="badge bg-light text-dark">
+                    <i class="bi bi-file-earmark"></i> {{ course.get_files_count|default:0 }} ملف
+                </span>
+                {% endif %}
+                <span class="badge bg-light text-dark">
+                    <i class="bi bi-clock"></i> {{ course.credit_hours }} ساعات
+                </span>
+            </div>
+            
+            {# Course Description #}
+            {% if course.description and not compact %}
+            <p class="card-text text-muted small mb-3">
+                {{ course.description|truncatechars:80 }}
+            </p>
+            {% endif %}
+        </div>
+        
+        {# Card Footer with Actions #}
+        <div class="card-footer bg-transparent border-top-0 pt-0">
+            <div class="d-flex gap-2">
+                <a href="{% url 'courses:course_detail' course.id %}" class="btn btn-sm btn-outline-primary flex-grow-1">
+                    <i class="bi bi-eye"></i> عرض
+                </a>
+                {% if show_upload_btn %}
+                <a href="{% url 'courses:file_upload' course.id %}" class="btn btn-sm btn-success">
+                    <i class="bi bi-upload"></i>
+                </a>
+                {% endif %}
+                {% if show_manage_btn %}
+                <a href="{% url 'courses:course_edit' course.id %}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-gear"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

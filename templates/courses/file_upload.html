@@ -1,0 +1,265 @@
+{% extends 'layouts/dashboard_base.html' %}
+{% load static %}
+{% load permissions %}
+
+{#
+رفع ملف - File Upload
+S-ACM - Smart Academic Content Management System
+#}
+
+{% block page_title %}رفع ملف{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'courses:course_list' %}">المقررات</a></li>
+<li class="breadcrumb-item"><a href="{% url 'courses:course_detail' course.id %}">{{ course.course_name }}</a></li>
+<li class="breadcrumb-item active">رفع ملف</li>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            {# ========== Page Header ========== #}
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <a href="{% url 'courses:course_detail' course.id %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+                <div class="page-icon bg-success-subtle text-success rounded-3 p-3">
+                    <i class="bi bi-upload fs-4"></i>
+                </div>
+                <div>
+                    <h4 class="mb-0 fw-bold">رفع ملف جديد</h4>
+                    <p class="text-muted mb-0 small">{{ course.course_name }}</p>
+                </div>
+            </div>
+
+            {# ========== Upload Form ========== #}
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data" id="uploadForm">
+                        {% csrf_token %}
+                        
+                        {# File Type Selection #}
+                        <div class="mb-4">
+                            <label class="form-label">نوع المحتوى <span class="text-danger">*</span></label>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <input type="radio" class="btn-check" name="content_type" id="type_file" value="file" checked>
+                                    <label class="btn btn-outline-primary w-100 py-3" for="type_file">
+                                        <i class="bi bi-file-earmark-arrow-up d-block fs-3 mb-2"></i>
+                                        رفع ملف
+                                    </label>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="radio" class="btn-check" name="content_type" id="type_video" value="video">
+                                    <label class="btn btn-outline-primary w-100 py-3" for="type_video">
+                                        <i class="bi bi-play-circle d-block fs-3 mb-2"></i>
+                                        فيديو
+                                    </label>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="radio" class="btn-check" name="content_type" id="type_link" value="external_link">
+                                    <label class="btn btn-outline-primary w-100 py-3" for="type_link">
+                                        <i class="bi bi-link-45deg d-block fs-3 mb-2"></i>
+                                        رابط خارجي
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {# File Info #}
+                        <div class="row g-3 mb-4">
+                            <div class="col-12">
+                                <label for="title" class="form-label">عنوان الملف <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="title" name="title" 
+                                       placeholder="مثال: المحاضرة الأولى - مقدمة" required>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="file_type" class="form-label">تصنيف الملف <span class="text-danger">*</span></label>
+                                <select class="form-select" id="file_type" name="file_type" required>
+                                    <option value="">اختر التصنيف</option>
+                                    <option value="lecture">محاضرة</option>
+                                    <option value="assignment">واجب</option>
+                                    <option value="reference">مرجع</option>
+                                    <option value="exam">اختبار</option>
+                                    <option value="other">أخرى</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="week_number" class="form-label">رقم الأسبوع</label>
+                                <input type="number" class="form-control" id="week_number" name="week_number" 
+                                       min="1" max="16" placeholder="اختياري">
+                            </div>
+                        </div>
+                        
+                        {# File Upload Area #}
+                        <div id="fileUploadSection" class="mb-4">
+                            <label class="form-label">الملف <span class="text-danger">*</span></label>
+                            <div class="upload-area border border-2 border-dashed rounded-3 p-4 text-center" id="dropZone">
+                                <input type="file" class="d-none" id="file" name="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar,.mp4,.mp3,.jpg,.png">
+                                <div class="upload-placeholder">
+                                    <i class="bi bi-cloud-arrow-up display-4 text-muted"></i>
+                                    <p class="mb-2">اسحب الملف هنا أو</p>
+                                    <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('file').click()">
+                                        اختر ملف
+                                    </button>
+                                    <p class="text-muted small mt-2 mb-0">
+                                        PDF, Word, PowerPoint, Excel, ZIP, RAR, MP4, MP3, صور
+                                        <br>الحد الأقصى: 100 ميجابايت
+                                    </p>
+                                </div>
+                                <div class="upload-preview d-none">
+                                    <i class="bi bi-file-earmark-check display-4 text-success"></i>
+                                    <p class="mb-0 file-name"></p>
+                                    <small class="text-muted file-size"></small>
+                                    <button type="button" class="btn btn-sm btn-outline-danger mt-2" onclick="clearFile()">
+                                        <i class="bi bi-x-lg"></i> إزالة
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {# External Link Section #}
+                        <div id="linkSection" class="mb-4 d-none">
+                            <label for="external_link" class="form-label">الرابط الخارجي <span class="text-danger">*</span></label>
+                            <input type="url" class="form-control" id="external_link" name="external_link" 
+                                   placeholder="https://example.com/video">
+                            <small class="text-muted">يمكنك إضافة روابط من YouTube, Google Drive, Dropbox, إلخ</small>
+                        </div>
+                        
+                        {# Description #}
+                        <div class="mb-4">
+                            <label for="description" class="form-label">وصف الملف</label>
+                            <textarea class="form-control" id="description" name="description" rows="2"
+                                      placeholder="وصف مختصر للملف (اختياري)"></textarea>
+                        </div>
+                        
+                        {# Visibility Options #}
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="is_visible" name="is_visible" checked>
+                                <label class="form-check-label" for="is_visible">
+                                    الملف مرئي للطلاب
+                                </label>
+                            </div>
+                        </div>
+                        
+                        {# Upload Progress #}
+                        <div id="uploadProgress" class="mb-4 d-none">
+                            <label class="form-label">جاري الرفع...</label>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                     role="progressbar" style="width: 0%">0%</div>
+                            </div>
+                        </div>
+                        
+                        {# Form Actions #}
+                        <div class="d-flex justify-content-between pt-3 border-top">
+                            <a href="{% url 'courses:course_detail' course.id %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg me-1"></i>إلغاء
+                            </a>
+                            <button type="submit" class="btn btn-success" id="submitBtn">
+                                <i class="bi bi-upload me-1"></i>رفع الملف
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block dashboard_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('file');
+    const dropZone = document.getElementById('dropZone');
+    const fileUploadSection = document.getElementById('fileUploadSection');
+    const linkSection = document.getElementById('linkSection');
+    const contentTypeRadios = document.querySelectorAll('input[name="content_type"]');
+    
+    // Content type toggle
+    contentTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'external_link') {
+                fileUploadSection.classList.add('d-none');
+                linkSection.classList.remove('d-none');
+            } else {
+                fileUploadSection.classList.remove('d-none');
+                linkSection.classList.add('d-none');
+            }
+        });
+    });
+    
+    // Drag and drop
+    dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('border-primary', 'bg-light');
+    });
+    
+    dropZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('border-primary', 'bg-light');
+    });
+    
+    dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('border-primary', 'bg-light');
+        
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            showFilePreview(e.dataTransfer.files[0]);
+        }
+    });
+    
+    // File selection
+    fileInput.addEventListener('change', function() {
+        if (this.files.length) {
+            showFilePreview(this.files[0]);
+        }
+    });
+    
+    function showFilePreview(file) {
+        const placeholder = dropZone.querySelector('.upload-placeholder');
+        const preview = dropZone.querySelector('.upload-preview');
+        
+        placeholder.classList.add('d-none');
+        preview.classList.remove('d-none');
+        preview.querySelector('.file-name').textContent = file.name;
+        preview.querySelector('.file-size').textContent = formatFileSize(file.size);
+    }
+    
+    window.clearFile = function() {
+        fileInput.value = '';
+        const placeholder = dropZone.querySelector('.upload-placeholder');
+        const preview = dropZone.querySelector('.upload-preview');
+        
+        placeholder.classList.remove('d-none');
+        preview.classList.add('d-none');
+    };
+    
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' بايت';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' كيلوبايت';
+        return (bytes / 1048576).toFixed(1) + ' ميجابايت';
+    }
+});
+</script>
+
+<style>
+.upload-area {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.upload-area:hover {
+    border-color: var(--bs-primary) !important;
+    background-color: rgba(var(--bs-primary-rgb), 0.05);
+}
+.border-dashed {
+    border-style: dashed !important;
+}
+</style>
+{% endblock %}

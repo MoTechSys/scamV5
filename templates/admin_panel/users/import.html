@@ -1,0 +1,68 @@
+{% extends 'layouts/dashboard_base.html' %}
+{% load static %}
+
+{% block page_title %}استيراد المستخدمين{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'accounts:admin_user_list' %}">المستخدمين</a></li>
+<li class="breadcrumb-item active">استيراد CSV</li>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-upload me-2"></i>استيراد المستخدمين من ملف CSV
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="bi bi-info-circle me-1"></i>تعليمات الاستيراد:</h6>
+                        <ul class="mb-0">
+                            <li>يجب أن يكون الملف بصيغة CSV وترميز UTF-8</li>
+                            <li>الأعمدة المطلوبة: <code>academic_id, id_card_number, full_name, role</code></li>
+                            <li>الأعمدة الاختيارية: <code>email, major, level</code></li>
+                            <li>قيم الدور المتاحة: <code>student, instructor, admin</code></li>
+                            <li>سيتم إنشاء جميع الحسابات بحالة "غير مفعّل"</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card bg-light mb-4">
+                        <div class="card-header">
+                            <i class="bi bi-file-earmark-text me-1"></i>نموذج الملف
+                        </div>
+                        <div class="card-body">
+                            <pre class="mb-0 bg-white p-3 rounded"><code>academic_id,id_card_number,full_name,email,role,major,level
+441001234,1234567890,أحمد محمد علي,ahmed@email.com,student,علوم الحاسب,المستوى الأول
+441005678,0987654321,سارة علي أحمد,sara@email.com,student,نظم المعلومات,المستوى الثاني
+EMP001,1122334455,خالد العمري,,instructor,,</code></pre>
+                        </div>
+                    </div>
+                    
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="csv_file" class="form-label">ملف CSV <span class="text-danger">*</span></label>
+                            <input type="file" name="csv_file" id="csv_file" class="form-control" accept=".csv" required>
+                            <small class="text-muted">الحد الأقصى: 5 ميجابايت</small>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-upload me-1"></i>استيراد
+                            </button>
+                            <a href="{% url 'accounts:admin_user_list' %}" class="btn btn-outline-secondary">
+                                إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

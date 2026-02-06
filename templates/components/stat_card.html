@@ -1,0 +1,40 @@
+{# Stat Card Component - بطاقة الإحصائيات #}
+
+<div class="col-sm-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100 stat-card">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between">
+                <div>
+                    <p class="text-muted mb-1 small">{{ title }}</p>
+                    <h3 class="mb-0 fw-bold">{{ value|default:0 }}</h3>
+                    {% if subtitle %}
+                    <small class="text-muted">{{ subtitle }}</small>
+                    {% endif %}
+                    {% if change %}
+                    <div class="mt-2">
+                        {% if change_type == 'up' %}
+                        <span class="badge bg-success-subtle text-success">
+                            <i class="bi bi-arrow-up"></i> {{ change }}
+                        </span>
+                        {% elif change_type == 'down' %}
+                        <span class="badge bg-danger-subtle text-danger">
+                            <i class="bi bi-arrow-down"></i> {{ change }}
+                        </span>
+                        {% else %}
+                        <span class="badge bg-secondary-subtle text-secondary">
+                            {{ change }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="stat-icon bg-{{ color|default:'primary' }}-subtle text-{{ color|default:'primary' }} rounded-3 p-3">
+                    <i class="bi {{ icon|default:'bi-graph-up' }} fs-4"></i>
+                </div>
+            </div>
+            {% if link %}
+            <a href="{{ link }}" class="stretched-link"></a>
+            {% endif %}
+        </div>
+    </div>
+</div>

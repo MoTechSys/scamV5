@@ -1,0 +1,73 @@
+{% extends 'layouts/dashboard_base.html' %}
+
+{% block page_title %}{% if object %}تعديل الدور{% else %}إضافة دور جديد{% endif %}{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-{% if object %}pencil{% else %}plus-circle{% endif %} me-2"></i>
+                        {% if object %}تعديل الدور: {{ object.display_name }}{% else %}إضافة دور جديد{% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        {% if not object %}
+                        <div class="mb-3">
+                            <label for="id_code" class="form-label">كود الدور <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="id_code" name="code"
+                                value="{{ form.code.value|default:'' }}" placeholder="مثال: moderator, editor"
+                                pattern="[a-z_]+" required>
+                            <div class="form-text">حروف إنجليزية صغيرة وشرطة سفلية فقط</div>
+                            {% if form.code.errors %}
+                            <div class="invalid-feedback d-block">{{ form.code.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="id_display_name" class="form-label">اسم العرض <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="id_display_name" name="display_name"
+                                value="{{ form.display_name.value|default:'' }}" placeholder="مثال: مشرف، محرر"
+                                required>
+                            {% if form.display_name.errors %}
+                            <div class="invalid-feedback d-block">{{ form.display_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_description" class="form-label">الوصف</label>
+                            <textarea class="form-control" id="id_description" name="description" rows="3"
+                                placeholder="وصف اختياري للدور">{{ form.description.value|default:'' }}</textarea>
+                        </div>
+
+                        {% if object %}
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="id_is_active" name="is_active" {% if form.is_active.value %}checked{% endif %}>
+                                <label class="form-check-label" for="id_is_active">نشط</label>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-1"></i>حفظ
+                            </button>
+                            <a href="{% url 'accounts:admin_roles' %}" class="btn btn-outline-secondary">
+                                إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

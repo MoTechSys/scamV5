@@ -1,0 +1,27 @@
+{#
+Empty State Component
+S-ACM - Smart Academic Content Management System
+
+Usage:
+{% include 'components/empty_state.html' with icon="bi-inbox" title="لا توجد بيانات" message="لم يتم العثور على أي عناصر" action_url="/add/" action_text="إضافة عنصر" %}
+
+Parameters:
+- icon: أيقونة Bootstrap Icons
+- title: عنوان الحالة الفارغة
+- message: رسالة توضيحية (اختياري)
+- action_url: رابط زر الإجراء (اختياري)
+- action_text: نص زر الإجراء
+#}
+
+<div class="text-center py-5">
+    <i class="bi {{ icon|default:'bi-inbox' }} display-1 text-muted"></i>
+    <h5 class="mt-3 text-muted">{{ title|default:"لا توجد بيانات" }}</h5>
+    {% if message %}
+    <p class="text-muted">{{ message }}</p>
+    {% endif %}
+    {% if action_url %}
+    <a href="{{ action_url }}" class="btn btn-primary mt-2">
+        <i class="bi bi-plus-lg me-1"></i>{{ action_text }}
+    </a>
+    {% endif %}
+</div>

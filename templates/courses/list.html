@@ -1,0 +1,233 @@
+{% extends 'layouts/dashboard_base.html' %}
+{% load static %}
+{% load permissions %}
+
+{#
+قائمة المقررات الموحدة - Unified Course List
+S-ACM - Smart Academic Content Management System
+
+تعرض المقررات بناءً على صلاحيات المستخدم:
+- للطالب: مقرراته المسجلة (الحالية والأرشيف)
+- للمدرس: المقررات المعينة له
+- للمسؤول: جميع المقررات مع أدوات الإدارة
+#}
+
+{% block page_title %}المقررات{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">المقررات</li>
+{% endblock %}
+
+{% block page_actions %}
+{% if perms.add_course or request.user.is_admin %}
+<a href="{% url 'courses:course_create' %}" class="btn btn-sm btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>إضافة مقرر
+</a>
+{% endif %}
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    {# ========== Page Header ========== #}
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-icon bg-primary-subtle text-primary rounded-3 p-3">
+                <i class="bi bi-book fs-4"></i>
+            </div>
+            <div>
+                <h4 class="mb-0 fw-bold">المقررات</h4>
+                <p class="text-muted mb-0 small">
+                    {% if request.user.is_admin %}
+                    إدارة جميع المقررات في النظام
+                    {% elif request.user.is_instructor %}
+                    المقررات المعينة لك
+                    {% else %}
+                    مقرراتك الدراسية
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <div class="d-flex gap-2 flex-wrap">
+            {% if perms.add_course or request.user.is_admin %}
+            <a href="{% url 'courses:course_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i>إضافة مقرر
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ========== Tabs (للطلاب فقط) ========== #}
+    {% if request.user.is_student %}
+    <ul class="nav nav-tabs mb-4" id="courseTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link {% if not view_archived %}active{% endif %}" id="current-tab" 
+                    data-bs-toggle="tab" data-bs-target="#current" type="button" role="tab">
+                <i class="bi bi-calendar-check me-1"></i>المقررات الحالية
+                <span class="badge bg-primary ms-1">{{ current_courses_count|default:0 }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link {% if view_archived %}active{% endif %}" id="archived-tab" 
+                    data-bs-toggle="tab" data-bs-target="#archived" type="button" role="tab">
+                <i class="bi bi-archive me-1"></i>الأرشيف
+                <span class="badge bg-secondary ms-1">{{ archived_courses_count|default:0 }}</span>
+            </button>
+        </li>
+    </ul>
+    {% endif %}
+
+    {# ========== Filters ========== #}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small">البحث</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" name="q" value="{{ request.GET.q }}" placeholder="اسم أو رمز المقرر...">
+                    </div>
+                </div>
+                
+                {% if request.user.is_admin %}
+                <div class="col-md-2">
+                    <label class="form-label small">المستوى</label>
+                    <select class="form-select" name="level">
+                        <option value="">الكل</option>
+                        {% for level in levels %}
+                        <option value="{{ level.id }}" {% if request.GET.level == level.id|stringformat:"i" %}selected{% endif %}>
+                            {{ level.level_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-2">
+                    <label class="form-label small">التخصص</label>
+                    <select class="form-select" name="major">
+                        <option value="">الكل</option>
+                        {% for major in majors %}
+                        <option value="{{ major.id }}" {% if request.GET.major == major.id|stringformat:"i" %}selected{% endif %}>
+                            {{ major.major_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-2">
+                    <label class="form-label small">الفصل الدراسي</label>
+                    <select class="form-select" name="semester">
+                        <option value="">الكل</option>
+                        {% for semester in semesters %}
+                        <option value="{{ semester.id }}" {% if request.GET.semester == semester.id|stringformat:"i" %}selected{% endif %}>
+                            {{ semester.semester_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-2">
+                    <label class="form-label small">الحالة</label>
+                    <select class="form-select" name="status">
+                        <option value="">الكل</option>
+                        <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>نشط</option>
+                        <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>غير نشط</option>
+                    </select>
+                </div>
+                {% endif %}
+                
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {# ========== Courses Grid ========== #}
+    {% if request.user.is_student %}
+    <div class="tab-content" id="courseTabsContent">
+        {# Current Courses Tab #}
+        <div class="tab-pane fade {% if not view_archived %}show active{% endif %}" id="current" role="tabpanel">
+            <div class="row g-3">
+                {% for course in current_courses %}
+                {% include 'components/course_card.html' with course=course show_files_count=True %}
+                {% empty %}
+                <div class="col-12">
+                    {% include 'components/empty_state.html' with icon="bi-book" title="لا توجد مقررات حالية" message="لم يتم تسجيلك في أي مقررات للفصل الحالي" %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        {# Archived Courses Tab #}
+        <div class="tab-pane fade {% if view_archived %}show active{% endif %}" id="archived" role="tabpanel">
+            <div class="row g-3">
+                {% for course in archived_courses %}
+                {% include 'components/course_card.html' with course=course show_files_count=True %}
+                {% empty %}
+                <div class="col-12">
+                    {% include 'components/empty_state.html' with icon="bi-archive" title="لا توجد مقررات مؤرشفة" message="لم تكمل أي مقررات سابقة بعد" %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    {# For Instructors and Admins #}
+    <div class="row g-3">
+        {% for course in courses %}
+        {% include 'components/course_card.html' with course=course show_upload_btn=request.user.is_instructor show_manage_btn=request.user.is_admin show_files_count=True %}
+        {% empty %}
+        <div class="col-12">
+            {% include 'components/empty_state.html' with icon="bi-book" title="لا توجد مقررات" message="لم يتم إضافة أي مقررات بعد" action_url=add_course_url action_text="إضافة مقرر" action_icon="bi-plus-lg" %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {# ========== Pagination ========== #}
+    {% if page_obj and page_obj.paginator.num_pages > 1 %}
+    <nav class="mt-4" aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                    <i class="bi bi-chevron-double-right"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                    <i class="bi bi-chevron-double-left"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

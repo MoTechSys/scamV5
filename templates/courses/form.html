@@ -1,0 +1,205 @@
+{% extends 'layouts/dashboard_base.html' %}
+{% load static %}
+{% load permissions %}
+
+{#
+نموذج المقرر الموحد - Unified Course Form
+S-ACM - Smart Academic Content Management System
+
+يُستخدم لإنشاء وتعديل المقررات
+#}
+
+{% block page_title %}{% if course %}تعديل المقرر{% else %}إضافة مقرر جديد{% endif %}{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'courses:course_list' %}">المقررات</a></li>
+{% if course %}
+<li class="breadcrumb-item"><a href="{% url 'courses:course_detail' course.id %}">{{ course.course_name }}</a></li>
+<li class="breadcrumb-item active">تعديل</li>
+{% else %}
+<li class="breadcrumb-item active">إضافة مقرر</li>
+{% endif %}
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            {# ========== Page Header ========== #}
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <a href="{% if course %}{% url 'courses:course_detail' course.id %}{% else %}{% url 'courses:course_list' %}{% endif %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+                <div class="page-icon bg-primary-subtle text-primary rounded-3 p-3">
+                    <i class="bi bi-book fs-4"></i>
+                </div>
+                <div>
+                    <h4 class="mb-0 fw-bold">{% if course %}تعديل المقرر{% else %}إضافة مقرر جديد{% endif %}</h4>
+                    <p class="text-muted mb-0 small">{% if course %}تعديل بيانات المقرر{% else %}إنشاء مقرر دراسي جديد{% endif %}</p>
+                </div>
+            </div>
+
+            {# ========== Form Card ========== #}
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form method="post" id="courseForm">
+                        {% csrf_token %}
+                        
+                        {# Basic Info Section #}
+                        <h6 class="text-muted mb-3">
+                            <i class="bi bi-info-circle me-1"></i>المعلومات الأساسية
+                        </h6>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label for="course_code" class="form-label">رمز المقرر <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control {% if form.course_code.errors %}is-invalid{% endif %}" 
+                                       id="course_code" name="course_code" 
+                                       value="{{ form.course_code.value|default:course.course_code|default:'' }}"
+                                       placeholder="مثال: CS101" required>
+                                {% if form.course_code.errors %}
+                                <div class="invalid-feedback">{{ form.course_code.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-8">
+                                <label for="course_name" class="form-label">اسم المقرر <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control {% if form.course_name.errors %}is-invalid{% endif %}" 
+                                       id="course_name" name="course_name" 
+                                       value="{{ form.course_name.value|default:course.course_name|default:'' }}"
+                                       placeholder="مثال: مقدمة في البرمجة" required>
+                                {% if form.course_name.errors %}
+                                <div class="invalid-feedback">{{ form.course_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-12">
+                                <label for="description" class="form-label">الوصف</label>
+                                <textarea class="form-control" id="description" name="description" rows="3"
+                                          placeholder="وصف مختصر للمقرر...">{{ form.description.value|default:course.description|default:'' }}</textarea>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        {# Academic Info Section #}
+                        <h6 class="text-muted mb-3">
+                            <i class="bi bi-mortarboard me-1"></i>المعلومات الأكاديمية
+                        </h6>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label for="level" class="form-label">المستوى <span class="text-danger">*</span></label>
+                                <select class="form-select {% if form.level.errors %}is-invalid{% endif %}" 
+                                        id="level" name="level" required>
+                                    <option value="">اختر المستوى</option>
+                                    {% for level in levels %}
+                                    <option value="{{ level.id }}" {% if course.level_id == level.id or form.level.value == level.id|stringformat:"i" %}selected{% endif %}>
+                                        {{ level.level_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.level.errors %}
+                                <div class="invalid-feedback">{{ form.level.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label for="semester" class="form-label">الفصل الدراسي <span class="text-danger">*</span></label>
+                                <select class="form-select {% if form.semester.errors %}is-invalid{% endif %}" 
+                                        id="semester" name="semester" required>
+                                    <option value="">اختر الفصل</option>
+                                    {% for semester in semesters %}
+                                    <option value="{{ semester.id }}" {% if course.semester_id == semester.id or form.semester.value == semester.id|stringformat:"i" %}selected{% endif %}>
+                                        {{ semester.semester_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.semester.errors %}
+                                <div class="invalid-feedback">{{ form.semester.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label for="credit_hours" class="form-label">الساعات المعتمدة <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control {% if form.credit_hours.errors %}is-invalid{% endif %}" 
+                                       id="credit_hours" name="credit_hours" min="1" max="6"
+                                       value="{{ form.credit_hours.value|default:course.credit_hours|default:3 }}" required>
+                                {% if form.credit_hours.errors %}
+                                <div class="invalid-feedback">{{ form.credit_hours.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label">التخصصات <span class="text-danger">*</span></label>
+                                <div class="row g-2">
+                                    {% for major in majors %}
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   name="majors" value="{{ major.id }}" id="major_{{ major.id }}"
+                                                   {% if major in course.majors.all or major.id|stringformat:"i" in form.majors.value %}checked{% endif %}>
+                                            <label class="form-check-label" for="major_{{ major.id }}">
+                                                {{ major.major_name }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        {# Status Section #}
+                        <h6 class="text-muted mb-3">
+                            <i class="bi bi-toggle-on me-1"></i>الحالة
+                        </h6>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="is_active" name="is_active"
+                                           {% if course.is_active or not course %}checked{% endif %}>
+                                    <label class="form-check-label" for="is_active">
+                                        المقرر نشط
+                                    </label>
+                                </div>
+                                <small class="text-muted">المقررات النشطة تظهر للطلاب والمدرسين</small>
+                            </div>
+                        </div>
+                        
+                        {# Form Actions #}
+                        <div class="d-flex justify-content-between pt-3 border-top">
+                            <a href="{% if course %}{% url 'courses:course_detail' course.id %}{% else %}{% url 'courses:course_list' %}{% endif %}" 
+                               class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg me-1"></i>إلغاء
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-1"></i>
+                                {% if course %}حفظ التعديلات{% else %}إنشاء المقرر{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block dashboard_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form validation
+    const form = document.getElementById('courseForm');
+    form.addEventListener('submit', function(e) {
+        const majors = document.querySelectorAll('input[name="majors"]:checked');
+        if (majors.length === 0) {
+            e.preventDefault();
+            alert('يرجى اختيار تخصص واحد على الأقل');
+        }
+    });
+});
+</script>
+{% endblock %}

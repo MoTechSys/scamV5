@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}إرسال إشعار عام - S-ACM{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:admin_dashboard' %}">لوحة التحكم</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'notifications:admin_list' %}">الإشعارات</a></li>
+        <li class="breadcrumb-item active">إرسال إشعار</li>
+    </ol>
+</nav>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-bell me-2"></i>إرسال إشعار عام
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+                
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-1"></i>
+                    سيتم إرسال هذا الإشعار إلى جميع المستخدمين المحددين في النظام.
+                </div>
+                
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="id_target" class="form-label">المستهدفون *</label>
+                        {{ form.target }}
+                        {% if form.target.errors %}
+                        <div class="invalid-feedback d-block">{{ form.target.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_title" class="form-label">عنوان الإشعار *</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                        <div class="invalid-feedback d-block">{{ form.title.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_body" class="form-label">محتوى الإشعار *</label>
+                        {{ form.body }}
+                        {% if form.body.errors %}
+                        <div class="invalid-feedback d-block">{{ form.body.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_notification_type" class="form-label">نوع الإشعار</label>
+                            {{ form.notification_type }}
+                            {% if form.notification_type.errors %}
+                            <div class="invalid-feedback d-block">{{ form.notification_type.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="id_priority" class="form-label">الأولوية</label>
+                            {{ form.priority }}
+                            {% if form.priority.errors %}
+                            <div class="invalid-feedback d-block">{{ form.priority.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-fill">
+                            <i class="bi bi-send me-1"></i>إرسال الإشعار
+                        </button>
+                        <a href="{% url 'notifications:admin_list' %}" class="btn btn-outline-secondary">
+                            إلغاء
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

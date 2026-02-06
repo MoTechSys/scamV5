@@ -1,0 +1,50 @@
+"""
+URLs لتطبيق accounts
+S-ACM - Smart Academic Content Management System
+"""
+
+from django.urls import path
+from . import views
+
+app_name = 'accounts'
+
+urlpatterns = [
+    # Authentication
+    path('login/', views.LoginView.as_view(), name='login'),
+    path('logout/', views.LogoutView.as_view(), name='logout'),
+    
+    # Account Activation
+    path('activate/', views.ActivationStep1View.as_view(), name='activation_step1'),
+    path('activate/email/', views.ActivationStep2View.as_view(), name='activation_step2'),
+    path('activate/verify/', views.ActivationVerifyOTPView.as_view(), name='activation_verify_otp'),
+    path('activate/password/', views.ActivationSetPasswordView.as_view(), name='activation_set_password'),
+    
+    # Password Reset
+    path('password-reset/', views.PasswordResetRequestView.as_view(), name='password_reset_request'),
+    path('password-reset/<str:token>/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    
+    # Profile
+    path('profile/', views.ProfileView.as_view(), name='profile'),
+    path('profile/update/', views.ProfileUpdateView.as_view(), name='profile_update'),
+    path('profile/change-password/', views.ChangePasswordView.as_view(), name='change_password'),
+    
+    # Admin - Users Management
+    path('admin/dashboard/', views.AdminDashboardView.as_view(), name='admin_dashboard'),
+    path('admin/users/', views.UserListView.as_view(), name='admin_user_list'),
+    path('admin/users/create/', views.UserCreateView.as_view(), name='admin_user_create'),
+    path('admin/users/import/', views.UserBulkImportView.as_view(), name='admin_user_import'),
+    path('admin/users/promote/', views.StudentPromotionView.as_view(), name='admin_user_promote'),
+    path('admin/users/<int:pk>/', views.UserDetailView.as_view(), name='admin_user_detail'),
+    path('admin/users/<int:pk>/edit/', views.UserUpdateView.as_view(), name='admin_user_edit'),
+    path('admin/users/<int:pk>/suspend/', views.UserSuspendView.as_view(), name='admin_user_suspend'),
+    path('admin/users/<int:pk>/activate/', views.UserActivateView.as_view(), name='admin_user_activate'),
+    
+    # Admin - Roles Management
+    path('admin/roles/', views.RoleListView.as_view(), name='admin_roles'),
+    path('admin/roles/create/', views.RoleCreateView.as_view(), name='admin_role_create'),
+    path('admin/roles/<int:pk>/edit/', views.RoleUpdateView.as_view(), name='admin_role_edit'),
+    path('admin/roles/<int:pk>/permissions/', views.RolePermissionsView.as_view(), name='admin_role_permissions'),
+    
+    # Admin - Permissions
+    path('admin/permissions/', views.PermissionListView.as_view(), name='admin_permissions'),
+]

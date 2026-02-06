@@ -1,0 +1,64 @@
+{# Modal Confirm Component - نافذة تأكيد العمليات #}
+
+{% with confirm_class=confirm_class|default:'btn-danger' icon_color=icon_color|default:'danger' %}
+<div class="modal fade" id="{{ modal_id }}" tabindex="-1" aria-labelledby="{{ modal_id }}Label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body text-center pt-0">
+                {# Icon #}
+                {% if icon %}
+                <div class="mb-3">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-{{ icon_color }}-subtle" 
+                         style="width: 80px; height: 80px;">
+                        <i class="bi {{ icon }} text-{{ icon_color }}" style="font-size: 2.5rem;"></i>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {# Title #}
+                <h5 class="modal-title mb-3" id="{{ modal_id }}Label">
+                    {{ title|default:"تأكيد العملية" }}
+                </h5>
+                
+                {# Message #}
+                <p class="text-muted mb-2">
+                    {{ message|default:"هل أنت متأكد من تنفيذ هذا الإجراء؟" }}
+                </p>
+                
+                {# Warning #}
+                {% if warning %}
+                <div class="alert alert-warning py-2 small">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    {{ warning }}
+                </div>
+                {% endif %}
+                
+                {# Dynamic Content Slot #}
+                <div id="{{ modal_id }}_content"></div>
+            </div>
+            <div class="modal-footer border-0 justify-content-center pt-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    {{ cancel_text|default:"إلغاء" }}
+                </button>
+                
+                {% if form_action %}
+                <form action="{{ form_action }}" method="post" class="d-inline" id="{{ modal_id }}_form">
+                    {% csrf_token %}
+                    <input type="hidden" name="item_id" id="{{ modal_id }}_item_id">
+                    <button type="submit" class="btn {{ confirm_class }}">
+                        {{ confirm_text|default:"تأكيد" }}
+                    </button>
+                </form>
+                {% else %}
+                <button type="button" class="btn {{ confirm_class }}" id="{{ modal_id }}_confirm">
+                    {{ confirm_text|default:"تأكيد" }}
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endwith %}

@@ -1,0 +1,42 @@
+{#
+Page Header Component
+S-ACM - Smart Academic Content Management System
+
+Usage:
+{% include 'components/page_header.html' with title="إدارة المستخدمين" breadcrumbs=breadcrumbs action_url=action_url action_text="إضافة مستخدم" action_icon="bi-plus-lg" %}
+
+Parameters:
+- title: عنوان الصفحة
+- subtitle: نص فرعي اختياري
+- breadcrumbs: قائمة بعناصر مسار التنقل [{'label': 'الرئيسية', 'url': '/'}, ...]
+- action_url: رابط زر الإجراء الرئيسي (اختياري)
+- action_text: نص زر الإجراء
+- action_icon: أيقونة زر الإجراء
+#}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        {% if breadcrumbs %}
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2">
+                {% for item in breadcrumbs %}
+                {% if forloop.last %}
+                <li class="breadcrumb-item active" aria-current="page">{{ item.label }}</li>
+                {% else %}
+                <li class="breadcrumb-item"><a href="{{ item.url }}">{{ item.label }}</a></li>
+                {% endif %}
+                {% endfor %}
+            </ol>
+        </nav>
+        {% endif %}
+        <h4 class="mb-0">{{ title }}</h4>
+        {% if subtitle %}
+        <p class="text-muted mb-0">{{ subtitle }}</p>
+        {% endif %}
+    </div>
+    {% if action_url %}
+    <a href="{{ action_url }}" class="btn btn-primary">
+        <i class="bi {{ action_icon|default:'bi-plus-lg' }} me-1"></i>{{ action_text }}
+    </a>
+    {% endif %}
+</div>
