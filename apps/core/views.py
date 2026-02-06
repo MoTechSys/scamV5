@@ -345,7 +345,7 @@ class UsersListView(LoginRequiredMixin, TemplateView):
     """
     صفحة قائمة المستخدمين
     """
-    template_name = 'users/list.html'
+    template_name = 'admin_panel/users/list.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -413,7 +413,7 @@ class RolesListView(LoginRequiredMixin, TemplateView):
     """
     صفحة قائمة الأدوار
     """
-    template_name = 'roles/list.html'
+    template_name = 'admin_panel/roles/list.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
