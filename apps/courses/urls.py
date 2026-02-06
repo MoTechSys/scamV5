@@ -1,8 +1,9 @@
 """
-URL Configuration for Courses App
+URL Configuration for Courses App - UNIFIED ROUTER
 S-ACM - Smart Academic Content Management System
 
-Updated to match the improved views.py and include missing Admin paths.
+Single Source of Truth: Unified URLs that handle all roles via permissions.
+NO LEGACY PATHS - All views are permission-based.
 """
 
 from django.urls import path
@@ -13,62 +14,35 @@ app_name = 'courses'
 
 urlpatterns = [
     # ==============================
-    # 1. Student URLs (واجهات الطالب)
+    # UNIFIED VIEWS (Permission-Based)
     # ==============================
-    path('student/', views.StudentDashboardView.as_view(), name='student_dashboard'),
-    path('student/courses/', views.StudentCourseListView.as_view(), name='student_course_list'),
-    path('student/courses/<int:pk>/', views.StudentCourseDetailView.as_view(), name='student_course_detail'),
     
-    # ==============================
-    # 2. File Operations (العمليات على الملفات)
-    # ==============================
-    # تم تأمين هذه الروابط في views.py ضد ثغرات IDOR
-    path('files/<int:pk>/download/', views.FileDownloadView.as_view(), name='file_download'),
-    path('files/<int:pk>/view/', views.FileViewView.as_view(), name='file_view'),
+    # Course List - Single view adapts to user permissions
+    path('', views_unified.UnifiedCourseListView.as_view(), name='course_list'),
+    path('list/', views_unified.UnifiedCourseListView.as_view(), name='list'),
+    path('my/', views_unified.UnifiedCourseListView.as_view(), name='my_courses'),
     
-    # ==============================
-    # 3. Instructor URLs (واجهات المدرس)
-    # ==============================
-    path('instructor/', views.InstructorDashboardView.as_view(), name='instructor_dashboard'),
-    path('instructor/courses/', views.InstructorCourseListView.as_view(), name='instructor_course_list'),
-    path('instructor/courses/<int:pk>/', views.InstructorCourseDetailView.as_view(), name='instructor_course_detail'),
+    # Course Detail
+    path('<int:pk>/', views_unified.UnifiedCourseDetailView.as_view(), name='course_detail'),
+    path('<int:pk>/detail/', views_unified.UnifiedCourseDetailView.as_view(), name='detail'),
     
-    # إدارة الملفات للمدرس
-    path('instructor/files/upload/', views.FileUploadView.as_view(), name='file_upload'),
-    path('instructor/files/<int:pk>/update/', views.FileUpdateView.as_view(), name='file_update'),
-    path('instructor/files/<int:pk>/delete/', views.FileDeleteView.as_view(), name='file_delete'),
-    path('instructor/files/<int:pk>/toggle-visibility/', views.FileToggleVisibilityView.as_view(), name='file_toggle_visibility'),
-    
-    # [جديد] رابط ميزة الذكاء الاصطناعي للمدرس
-    path('file/<int:pk>/generate-ai/', views.InstructorAIGenerationView.as_view(), name='instructor_file_ai'),
-
-    # ==============================
-    # 4. Admin URLs (واجهات المسؤول)
-    # ==============================
-    path('admin/courses/', views.AdminCourseListView.as_view(), name='admin_course_list'),
-    path('admin/courses/create/', views.AdminCourseCreateView.as_view(), name='admin_course_create'),
-    
-    # [تم الإصلاح] الروابط التي كانت مفقودة وتسبب خطأ NoReverseMatch
-    path('admin/courses/<int:pk>/', views.AdminCourseDetailView.as_view(), name='admin_course_detail'),
-    path('admin/courses/<int:pk>/update/', views.AdminCourseUpdateView.as_view(), name='admin_course_update'),
-    path('admin/courses/<int:pk>/assign-instructor/', views.AdminInstructorAssignView.as_view(), name='admin_instructor_assign'),
-    path('admin/courses/<int:pk>/assign-majors/', views.AdminCourseMajorView.as_view(), name='admin_course_major_assign'),
-    
-    # ==============================
-    # 5. Unified URLs (المسارات الموحدة)
-    # ==============================
-    # قائمة المقررات الموحدة
-    path('', views_unified.course_list, name='course_list'),
-    path('my/', views_unified.course_list, name='my_courses'),
-    
-    # تفاصيل المقرر
-    path('<int:pk>/', views_unified.course_detail, name='course_detail'),
-    
-    # إنشاء وتعديل المقرر
+    # Course CRUD (Permission-Protected)
     path('create/', views_unified.course_create, name='course_create'),
     path('<int:pk>/edit/', views_unified.course_edit, name='course_edit'),
+    path('<int:pk>/update/', views_unified.course_edit, name='course_update'),
     
-    # رفع الملفات
-    path('<int:pk>/upload/', views_unified.file_upload, name='file_upload'),
-    path('upload/', views_unified.file_upload, name='file_upload_select'),
+    # ==============================
+    # FILE OPERATIONS
+    # ==============================
+    path('files/upload/', views.FileUploadView.as_view(), name='file_upload'),
+    path('files/<int:pk>/download/', views.FileDownloadView.as_view(), name='file_download'),
+    path('files/<int:pk>/view/', views.FileViewView.as_view(), name='file_view'),
+    path('files/<int:pk>/update/', views.FileUpdateView.as_view(), name='file_update'),
+    path('files/<int:pk>/delete/', views.FileDeleteView.as_view(), name='file_delete'),
+    path('files/<int:pk>/toggle-visibility/', views.FileToggleVisibilityView.as_view(), name='file_toggle_visibility'),
+    
+    # ==============================
+    # AI Features
+    # ==============================
+    path('files/<int:pk>/ai/', views.InstructorAIGenerationView.as_view(), name='file_ai'),
 ]

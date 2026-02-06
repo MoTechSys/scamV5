@@ -1,9 +1,11 @@
-{% extends 'base.html' %}
+{% extends 'layouts/dashboard_base.html' %}
 {% load static %}
 
 {% block title %}الإشعارات - S-ACM{% endblock %}
 
-{% block content %}
+{% block page_title %}الإشعارات{% endblock %}
+
+{% block dashboard_content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="bi bi-bell me-2"></i>الإشعارات</h2>
     {% if notifications %}
@@ -19,7 +21,8 @@
 <div class="card">
     <div class="card-body p-0">
         {% for notification in notifications %}
-        <div class="notification-item p-3 border-bottom {% if not notification.is_read %}bg-light{% endif %}" data-notification-id="{{ notification.pk }}">
+        <div class="notification-item p-3 border-bottom {% if not notification.is_read %}bg-light{% endif %}"
+            data-notification-id="{{ notification.pk }}">
             <div class="d-flex">
                 <div class="notification-icon me-3">
                     {% if notification.notification_type == 'info' %}
@@ -59,7 +62,8 @@
                     {% endif %}
                     <form method="post" action="{% url 'notifications:delete' notification.pk %}" class="d-inline">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-sm btn-outline-danger" title="حذف" data-confirm="هل تريد حذف هذا الإشعار؟">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" title="حذف"
+                            data-confirm="هل تريد حذف هذا الإشعار؟">
                             <i class="bi bi-trash"></i>
                         </button>
                     </form>
@@ -74,7 +78,7 @@
         </div>
         {% endfor %}
     </div>
-    
+
     {% if notifications.has_other_pages %}
     <div class="card-footer">
         <nav>
@@ -84,13 +88,13 @@
                     <a class="page-link" href="?page={{ notifications.previous_page_number }}">السابق</a>
                 </li>
                 {% endif %}
-                
+
                 {% for num in notifications.paginator.page_range %}
                 <li class="page-item {% if notifications.number == num %}active{% endif %}">
                     <a class="page-link" href="?page={{ num }}">{{ num }}</a>
                 </li>
                 {% endfor %}
-                
+
                 {% if notifications.has_next %}
                 <li class="page-item">
                     <a class="page-link" href="?page={{ notifications.next_page_number }}">التالي</a>
@@ -101,4 +105,4 @@
     </div>
     {% endif %}
 </div>
-{% endblock %}
+{% endblock dashboard_content %}
