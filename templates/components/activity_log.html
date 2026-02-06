@@ -13,7 +13,7 @@
         {% endif %}
     </div>
     {% endif %}
-    
+
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover mb-0 {% if compact %}table-sm{% endif %}">
@@ -32,11 +32,13 @@
                     <tr>
                         <td>
                             <div class="d-flex align-items-center gap-2">
-                                <div class="avatar-circle bg-primary-subtle text-primary" style="width: 28px; height: 28px; font-size: 0.7rem;">
+                                <div class="avatar-circle bg-primary-subtle text-primary"
+                                    style="width: 28px; height: 28px; font-size: 0.7rem;">
                                     {{ activity.user.full_name|slice:":1"|upper|default:"?" }}
                                 </div>
                                 <div>
-                                    <span class="fw-medium">{{ activity.user.full_name|default:activity.user.academic_id }}</span>
+                                    <span class="fw-medium">{{ activity.user.full_name|default:activity.user.academic_id
+                                        }}</span>
                                     {% if not compact %}
                                     <br><small class="text-muted">{{ activity.user.academic_id }}</small>
                                     {% endif %}
@@ -75,8 +77,8 @@
                         </td>
                         <td>
                             <small class="text-muted">
-                                {{ activity.activity_time|date:"Y/m/d" }}
-                                <br>{{ activity.activity_time|time:"H:i" }}
+                                {{ activity.timestamp|date:"Y/m/d" }}
+                                <br>{{ activity.timestamp|time:"H:i" }}
                             </small>
                         </td>
                         {% if not compact %}
@@ -88,7 +90,8 @@
                     {% empty %}
                     <tr>
                         <td colspan="{% if compact %}3{% else %}4{% endif %}" class="text-center py-4">
-                            {% include 'components/empty_state.html' with icon="bi-activity" title="لا توجد نشاطات" size="sm" %}
+                            {% include 'components/empty_state.html' with icon="bi-activity" title="لا توجد نشاطات"
+                            size="sm" %}
                         </td>
                     </tr>
                     {% endfor %}

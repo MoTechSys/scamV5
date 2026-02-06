@@ -306,15 +306,15 @@ S-ACM - Smart Academic Content Management System
         backgroundColor: 'rgba(13, 110, 253, 0.1)',
         fill: true,
         tension: 0.4
-                }, {
+                    }, {
             label: 'التحميلات',
             data: {{ download_data| safe |default: '[8, 12, 6, 9, 11, 8, 14]' }},
         borderColor: 'rgba(25, 135, 84, 1)',
         backgroundColor: 'rgba(25, 135, 84, 0.1)',
         fill: true,
         tension: 0.4
-                }]
-            },
+                    }]
+                },
         options: {
         responsive: true,
         plugins: {
@@ -324,8 +324,8 @@ S-ACM - Smart Academic Content Management System
             y: { beginAtZero: true }
         }
     }
-        });
-    }
+            });
+        }
 
     // Users Distribution Chart
     const usersCtx = document.getElementById('usersDistributionChart');
@@ -341,16 +341,16 @@ S-ACM - Smart Academic Content Management System
         'rgba(255, 193, 7, 0.8)',
         'rgba(220, 53, 69, 0.8)'
     ]
-                }]
-            },
+                    }]
+                },
     options: {
         responsive: true,
             plugins: {
             legend: { position: 'bottom' }
         }
     }
-        });
-    }
+            });
+        }
 
     // File Types Chart
     const fileTypesCtx = document.getElementById('fileTypesChart');
@@ -371,8 +371,8 @@ S-ACM - Smart Academic Content Management System
             'rgba(25, 135, 84, 0.7)',
             'rgba(108, 117, 125, 0.7)'
         ]
-                }]
-            },
+                    }]
+                },
     options: {
         responsive: true,
             plugins: {
@@ -382,9 +382,9 @@ S-ACM - Smart Academic Content Management System
             y: { beginAtZero: true }
         }
     }
-        });
-    }
-});
+            });
+        }
+    });
 
     function generateReport(type) {
         window.location.href = '/reports/generate/?type=' + type;
