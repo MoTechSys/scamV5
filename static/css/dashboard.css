@@ -9,13 +9,16 @@
 /* ========== Shadcn Slate Palette ========== */
 :root {
     /* Core Colors - Slate Theme */
-    --bs-body-bg: #f8fafc; /* Slate-50 */
-    --bs-body-color: #0f172a; /* Slate-900 */
+    --bs-body-bg: #f8fafc;
+    /* Slate-50 */
+    --bs-body-color: #0f172a;
+    /* Slate-900 */
     --bs-primary: #0f172a;
     --bs-primary-rgb: 15, 23, 42;
-    --bs-secondary: #64748b; /* Slate-500 */
+    --bs-secondary: #64748b;
+    /* Slate-500 */
     --bs-secondary-rgb: 100, 116, 139;
-    
+
     /* Slate Scale */
     --slate-50: #f8fafc;
     --slate-100: #f1f5f9;
@@ -28,13 +31,14 @@
     --slate-800: #1e293b;
     --slate-900: #0f172a;
     --slate-950: #020617;
-    
+
     /* Card Styling */
-    --card-border-radius: 0.75rem; /* 12px */
+    --card-border-radius: 0.75rem;
+    /* 12px */
     --card-border-color: var(--slate-200);
     --card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
     --card-shadow-hover: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    
+
     /* Dashboard Variables */
     --dashboard-bg: var(--slate-50);
     --sidebar-bg: white;
@@ -63,7 +67,7 @@
 }
 
 /* ========== Tables - Airy & Modern ========== */
-.table > :not(caption) > * > * {
+.table> :not(caption)>*>* {
     padding: 1rem 1rem;
     vertical-align: middle;
     border-bottom-color: var(--slate-200);
@@ -182,7 +186,7 @@
 }
 
 /* ========== Tables ========== */
-.table > :not(caption) > * > * {
+.table> :not(caption)>*>* {
     padding: 0.75rem 1rem;
 }
 
@@ -266,19 +270,19 @@
     .page-header {
         padding-bottom: 0.75rem;
     }
-    
+
     .page-icon {
         display: none;
     }
-    
+
     .stat-card .card-body {
         padding: 1rem;
     }
-    
+
     .file-item .file-actions {
         flex-direction: column;
     }
-    
+
     .file-item .file-actions .btn {
         width: 100%;
     }
@@ -286,6 +290,7 @@
 
 /* ========== Print Styles ========== */
 @media print {
+
     .sidebar,
     .dashboard-navbar,
     .page-actions,
@@ -293,14 +298,99 @@
     .btn {
         display: none !important;
     }
-    
+
     .dashboard-content {
         margin: 0 !important;
         padding: 0 !important;
     }
-    
+
     .card {
         box-shadow: none !important;
         border: 1px solid #dee2e6 !important;
     }
+}
+
+/* ============================================
+   SIDEBAR VISIBILITY FIX - High Contrast
+   ============================================ */
+
+#sidebarMenu,
+.offcanvas-lg,
+.sidebar,
+#desktopSidebar,
+#mobileSidebar {
+    background-color: #ffffff !important;
+    /* Force White Background */
+    border-right: 1px solid #e2e8f0;
+    /* Slate-200 Border */
+}
+
+/* Sidebar Links - Default State (Dark Text) */
+.sidebar .nav-link,
+.sidebar-link,
+#sidebarMenu .nav-link,
+.sidebar-nav .nav-link {
+    color: #334155 !important;
+    /* Slate-700 - Dark Grey */
+    font-weight: 500;
+    border-radius: 0.5rem;
+    margin-bottom: 4px;
+    padding: 0.75rem 1rem;
+    transition: all 0.2s ease;
+}
+
+/* Sidebar Links - Hover State */
+.sidebar .nav-link:hover,
+.sidebar-link:hover,
+#sidebarMenu .nav-link:hover,
+.sidebar-nav .nav-link:hover {
+    color: #0f172a !important;
+    /* Slate-900 - Black */
+    background-color: #f1f5f9 !important;
+    /* Slate-100 - Light Grey */
+}
+
+/* Sidebar Links - Active State */
+.sidebar .nav-link.active,
+.sidebar-link.active,
+#sidebarMenu .nav-link.active,
+.sidebar-nav .nav-link.active {
+    color: #2563eb !important;
+    /* Blue-600 */
+    background-color: #eff6ff !important;
+    /* Blue-50 */
+    font-weight: 600;
+}
+
+/* Icons within links */
+.sidebar .nav-link i,
+.sidebar-link i,
+#sidebarMenu .nav-link i,
+.sidebar-nav .nav-link i {
+    color: inherit;
+    /* Icon adopts text color */
+    margin-left: 0.5rem;
+    /* Arabic RTL spacing */
+}
+
+/* Sidebar Header/Brand */
+.sidebar-header,
+.sidebar-brand {
+    color: #0f172a !important;
+}
+
+/* Sidebar User Info */
+.sidebar-user .user-name,
+.sidebar-user .user-role {
+    color: #334155 !important;
+}
+
+/* Separator Text */
+.sidebar-separator .separator-text {
+    color: #64748b !important;
+    /* Slate-500 */
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }

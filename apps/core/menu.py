@@ -96,7 +96,7 @@ MENU_ITEMS = [
         code='manage_files',
         icon='bi-folder-plus',
         label='إدارة الملفات',
-        url_name='courses:instructor_course_list',
+        url_name='courses:file_upload',  # Unified file upload URL
         required_perm='upload_files',
         order=20,
     ),
@@ -186,7 +186,7 @@ MENU_ITEMS = [
                 code='courses_list',
                 icon='bi-journal-text',
                 label='قائمة المقررات',
-                url_name='courses:admin_course_list',
+                url_name='courses:course_list',  # Unified URL
                 required_perm='manage_courses',
                 order=1,
             ),
@@ -194,7 +194,7 @@ MENU_ITEMS = [
                 code='courses_add',
                 icon='bi-journal-plus',
                 label='إضافة مقرر',
-                url_name='courses:admin_course_create',
+                url_name='courses:course_create',  # Unified URL
                 required_perm='manage_courses',
                 order=2,
             ),
