@@ -26,19 +26,10 @@ class HomeView(TemplateView):
 @login_required
 def dashboard_redirect(request):
     """
-    توجيه المستخدم إلى لوحة التحكم المناسبة حسب دوره
+    توجيه المستخدم إلى لوحة التحكم الموحدة
+    Dashboard is now unified and permission-based - no role redirects needed
     """
-    user = request.user
-    
-    if user.is_admin():
-        return redirect('accounts:admin_dashboard')
-    elif user.is_instructor():
-        return redirect('courses:instructor_dashboard')
-    elif user.is_student():
-        return redirect('courses:student_dashboard')
-    else:
-        # إذا لم يكن له دور محدد
-        return redirect('accounts:profile')
+    return redirect('core:dashboard')
 
 
 class AboutView(TemplateView):
@@ -149,7 +140,8 @@ class Error500View(TemplateView):
 
 class UnifiedDashboardView(LoginRequiredMixin, TemplateView):
     """
-    لوحة التحكم الموحدة - تعرض محتوى مختلف حسب نوع المستخدم
+    لوحة التحكم الموحدة - المبنية على الصلاحيات
+    تعرض محتوى مختلف بناءً على صلاحيات المستخدم (has_perm) وليس دوره
     """
     template_name = 'dashboard/index.html'
     
@@ -161,15 +153,187 @@ class UnifiedDashboardView(LoginRequiredMixin, TemplateView):
         context['current_semester'] = self._get_current_semester()
         context['recent_activities'] = self._get_recent_activities(user)
         
-        # بيانات حسب نوع المستخدم
-        if hasattr(user, 'is_admin') and user.is_admin():
-            context.update(self._get_admin_data())
-        elif hasattr(user, 'is_instructor') and user.is_instructor():
-            context.update(self._get_instructor_data(user))
-        else:  # طالب
-            context.update(self._get_student_data(user))
+        # === Permission-Based Context Building ===
+        context['stats'] = self._build_permission_based_stats(user)
+        context['widgets'] = self._build_permission_based_widgets(user)
+        context['quick_actions'] = self._build_quick_actions(user)
+        context['recent_files'] = self._get_recent_files(user)
+        context['my_courses'] = self._get_user_courses(user)
         
         return context
+    
+    def _build_permission_based_stats(self, user):
+        """بناء الإحصائيات بناءً على الصلاحيات"""
+        from apps.accounts.models import User
+        from apps.courses.models import Course, LectureFile
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        stats = {}
+        today = timezone.now().date()
+        week_ago = today - timedelta(days=7)
+        
+        # Total Users - only if can view users
+        if user.has_perm('accounts.view_user'):
+            stats['total_users'] = User.objects.count()
+            stats['active_users'] = User.objects.filter(last_login__date__gte=week_ago).count()
+            stats['pending_users'] = User.objects.filter(account_status='pending').count()
+        
+        # All Courses - only if can view all courses
+        if user.has_perm('courses.view_course'):
+            stats['total_courses'] = Course.objects.count()
+        
+        # Total Files - only if can view all files
+        if user.has_perm('courses.view_lecturefile'):
+            stats['total_files'] = LectureFile.objects.count()
+        
+        # My Courses (for instructors/students) - always shown
+        my_courses = self._get_user_courses(user)
+        stats['my_courses'] = my_courses.count() if hasattr(my_courses, 'count') else len(my_courses)
+        
+        # My Files (for uploaders)
+        if user.has_perm('courses.add_lecturefile'):
+            stats['my_files'] = LectureFile.objects.filter(uploader=user).count()
+        
+        return stats
+    
+    def _build_permission_based_widgets(self, user):
+        """بناء الـ widgets بناءً على الصلاحيات"""
+        widgets = []
+        
+        # Users widget
+        if user.has_perm('accounts.view_user'):
+            widgets.append({
+                'type': 'users',
+                'title': 'إجمالي المستخدمين',
+                'icon': 'bi-people',
+                'color': 'primary',
+            })
+        
+        # Courses widget
+        if user.has_perm('courses.view_course'):
+            widgets.append({
+                'type': 'courses',
+                'title': 'جميع المقررات',
+                'icon': 'bi-book',
+                'color': 'success',
+            })
+        
+        # Files widget
+        if user.has_perm('courses.view_lecturefile'):
+            widgets.append({
+                'type': 'files',
+                'title': 'إجمالي الملفات',
+                'icon': 'bi-file-earmark',
+                'color': 'info',
+            })
+        
+        return widgets
+    
+    def _build_quick_actions(self, user):
+        """بناء الإجراءات السريعة بناءً على الصلاحيات"""
+        actions = []
+        
+        # Upload file action
+        if user.has_perm('courses.add_lecturefile'):
+            actions.append({
+                'title': 'رفع ملف',
+                'url': 'courses:file_upload',
+                'icon': 'bi-upload',
+                'color': 'success'
+            })
+        
+        # Add user action
+        if user.has_perm('accounts.add_user'):
+            actions.append({
+                'title': 'إضافة مستخدم',
+                'url': 'accounts:admin_user_create',
+                'icon': 'bi-person-plus',
+                'color': 'primary'
+            })
+        
+        # Add course action
+        if user.has_perm('courses.add_course'):
+            actions.append({
+                'title': 'إضافة مقرر',
+                'url': 'courses:admin_course_create',
+                'icon': 'bi-book',
+                'color': 'success'
+            })
+        
+        # Reports action
+        if user.has_perm('reports.view_report') or user.has_perm('accounts.view_user'):
+            actions.append({
+                'title': 'التقارير',
+                'url': 'reports:index',
+                'icon': 'bi-bar-chart',
+                'color': 'info'
+            })
+        
+        # Settings action
+        if user.has_perm('core.change_setting'):
+            actions.append({
+                'title': 'الإعدادات',
+                'url': 'core:settings',
+                'icon': 'bi-gear',
+                'color': 'secondary'
+            })
+        
+        # My courses (for everyone)
+        actions.append({
+            'title': 'مقرراتي',
+            'url': 'courses:course_list',
+            'icon': 'bi-book',
+            'color': 'primary'
+        })
+        
+        return actions
+    
+    def _get_user_courses(self, user):
+        """الحصول على مقررات المستخدم"""
+        from apps.courses.models import Course
+        
+        # If user can view all courses (admin)
+        if user.has_perm('courses.view_course'):
+            return Course.objects.all()[:6]
+        
+        # If instructor
+        if hasattr(user, 'instructor_courses'):
+            instructor_courses = Course.objects.filter(instructor_courses__instructor=user)
+            if instructor_courses.exists():
+                return instructor_courses[:6]
+        
+        # If student
+        if hasattr(user, 'enrolled_courses'):
+            return user.enrolled_courses.all()[:6]
+        
+        # Fallback: courses matching user's level/major
+        if hasattr(user, 'level') and user.level:
+            return Course.objects.filter(level=user.level)[:6]
+        
+        return Course.objects.none()
+    
+    def _get_recent_files(self, user):
+        """الحصول على آخر الملفات بناءً على الصلاحيات"""
+        from apps.courses.models import LectureFile
+        
+        # Admin: see all files
+        if user.has_perm('courses.view_lecturefile'):
+            return LectureFile.objects.order_by('-upload_date')[:5]
+        
+        # Instructor: see own uploaded files
+        if user.has_perm('courses.add_lecturefile'):
+            return LectureFile.objects.filter(uploader=user).order_by('-upload_date')[:5]
+        
+        # Student: see visible files from enrolled courses
+        my_courses = self._get_user_courses(user)
+        if my_courses:
+            return LectureFile.objects.filter(
+                course__in=my_courses,
+                is_visible=True
+            ).order_by('-upload_date')[:5]
+        
+        return []
     
     def _get_current_semester(self):
         """الحصول على الفصل الدراسي الحالي"""

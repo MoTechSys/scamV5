@@ -2,13 +2,12 @@
 {% load static %}
 
 {% block title %}إرسال إشعار للمقرر - S-ACM{% endblock %}
-
 {% block page_title %}إرسال إشعار{% endblock %}
 
 {% block dashboard_content %}
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'courses:instructor_dashboard' %}">لوحة التحكم</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">لوحة التحكم</a></li>
         <li class="breadcrumb-item active">إرسال إشعار</li>
     </ol>
 </nav>
@@ -74,7 +73,7 @@
                         <button type="submit" class="btn btn-primary flex-fill">
                             <i class="bi bi-send me-1"></i>إرسال الإشعار
                         </button>
-                        <a href="{% url 'courses:instructor_dashboard' %}" class="btn btn-outline-secondary">
+                        <a href="{% url 'core:dashboard' %}" class="btn btn-outline-secondary">
                             إلغاء
                         </a>
                     </div>

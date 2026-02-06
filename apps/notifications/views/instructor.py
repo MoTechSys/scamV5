@@ -28,7 +28,7 @@ class InstructorNotificationCreateView(LoginRequiredMixin, InstructorRequiredMix
     """
     model = Notification
     form_class = CourseNotificationForm
-    template_name = 'instructor_panel/notifications/create.html'
+    template_name = 'notifications/create.html'  # Unified
     
     def get_form_kwargs(self):
         """تمرير المستخدم للـ Form لتحديد المقررات المتاحة."""
@@ -59,7 +59,7 @@ class InstructorNotificationListView(LoginRequiredMixin, InstructorRequiredMixin
     
     تعرض جميع الإشعارات التي أنشأها المدرس الحالي.
     """
-    template_name = 'instructor_panel/notifications/list.html'
+    template_name = 'notifications/list.html'  # Unified
     context_object_name = 'notifications'
     paginate_by = 20
     

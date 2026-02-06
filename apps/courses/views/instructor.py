@@ -36,7 +36,7 @@ logger = logging.getLogger('courses')
 
 class InstructorDashboardView(LoginRequiredMixin, InstructorRequiredMixin, TemplateView):
     """لوحة تحكم المدرس"""
-    template_name = 'instructor_panel/dashboard.html'
+    template_name = 'dashboard/index.html'  # Unified dashboard
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -73,7 +73,7 @@ class InstructorDashboardView(LoginRequiredMixin, InstructorRequiredMixin, Templ
 
 class InstructorCourseListView(LoginRequiredMixin, InstructorRequiredMixin, ListView):
     """قائمة مقررات المدرس"""
-    template_name = 'instructor_panel/courses/list.html'
+    template_name = 'courses/list.html'  # Unified course list
     context_object_name = 'courses'
     
     def get_queryset(self):
@@ -83,7 +83,7 @@ class InstructorCourseListView(LoginRequiredMixin, InstructorRequiredMixin, List
 class InstructorCourseDetailView(LoginRequiredMixin, InstructorRequiredMixin, DetailView):
     """تفاصيل المقرر للمدرس"""
     model = Course
-    template_name = 'instructor_panel/courses/detail.html'
+    template_name = 'courses/detail.html'  # Unified course detail
     context_object_name = 'course'
     
     def get_queryset(self):
@@ -124,7 +124,7 @@ class FileUploadView(LoginRequiredMixin, InstructorRequiredMixin, CreateView):
     """
     model = LectureFile
     form_class = LectureFileForm
-    template_name = 'instructor_panel/files/upload.html'
+    template_name = 'courses/files/upload.html'  # Unified file upload
     
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -214,7 +214,7 @@ class FileUpdateView(LoginRequiredMixin, InstructorRequiredMixin, UpdateView):
     """تحديث ملف"""
     model = LectureFile
     form_class = LectureFileForm
-    template_name = 'instructor_panel/files/edit.html'
+    template_name = 'courses/files/edit.html'  # Unified file edit
     
     def get_queryset(self):
         # المسؤول يمكنه تعديل أي ملف، المدرس يمكنه تعديل ملفاته فقط

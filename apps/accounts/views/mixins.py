@@ -47,7 +47,7 @@ class InstructorRequiredMixin(UserPassesTestMixin):
     
     مثال الاستخدام:
         class InstructorDashboardView(LoginRequiredMixin, InstructorRequiredMixin, TemplateView):
-            template_name = 'instructor_panel/dashboard.html'
+            template_name = 'dashboard/index.html'  # Unified dashboard
     """
     
     def test_func(self):
@@ -69,7 +69,7 @@ class StudentRequiredMixin(UserPassesTestMixin):
     
     مثال الاستخدام:
         class StudentDashboardView(LoginRequiredMixin, StudentRequiredMixin, TemplateView):
-            template_name = 'student_panel/dashboard.html'
+            template_name = 'dashboard/index.html'  # Unified dashboard
     """
     
     def test_func(self):

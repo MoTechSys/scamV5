@@ -1,0 +1,89 @@
+{% extends 'layouts/dashboard_base.html' %}
+{% load static %}
+
+{% block title %}تعديل ملف - S-ACM{% endblock %}
+{% block page_title %}تعديل ملف{% endblock %}
+
+{% block dashboard_content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">لوحة التحكم</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'courses:course_list' %}">المقررات</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'courses:course_detail' object.course.pk %}">{{
+                object.course.course_code }}</a></li>
+        <li class="breadcrumb-item active">تعديل: {{ object.title }}</li>
+    </ol>
+</nav>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning text-dark">
+                <i class="bi bi-pencil-square me-2"></i>تعديل الملف
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="id_course" class="form-label">المقرر *</label>
+                        {{ form.course }}
+                        {% if form.course.errors %}
+                        <div class="invalid-feedback d-block">{{ form.course.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_title" class="form-label">عنوان الملف *</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                        <div class="invalid-feedback d-block">{{ form.title.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_file_type" class="form-label">نوع الملف *</label>
+                        {{ form.file_type }}
+                        {% if form.file_type.errors %}
+                        <div class="invalid-feedback d-block">{{ form.file_type.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_description" class="form-label">الوصف</label>
+                        {{ form.description }}
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        {{ form.is_visible }}
+                        <label class="form-check-label" for="id_is_visible">مرئي للطلاب</label>
+                    </div>
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-warning flex-fill">
+                            <i class="bi bi-save me-1"></i>حفظ التغييرات
+                        </button>
+                        <a href="{% url 'courses:course_detail' object.course.pk %}"
+                            class="btn btn-outline-secondary">إلغاء</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock dashboard_content %}

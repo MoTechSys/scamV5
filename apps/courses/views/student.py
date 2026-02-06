@@ -17,7 +17,7 @@ from apps.notifications.models import NotificationManager
 
 class StudentDashboardView(LoginRequiredMixin, StudentRequiredMixin, TemplateView):
     """لوحة تحكم الطالب"""
-    template_name = 'student_panel/dashboard.html'
+    template_name = 'dashboard/index.html'  # Unified dashboard
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -44,7 +44,7 @@ class StudentDashboardView(LoginRequiredMixin, StudentRequiredMixin, TemplateVie
 
 class StudentCourseListView(LoginRequiredMixin, StudentRequiredMixin, ListView):
     """قائمة مقررات الطالب"""
-    template_name = 'student_panel/courses/list.html'
+    template_name = 'courses/list.html'  # Unified course list
     context_object_name = 'courses'
     
     def get_queryset(self):
@@ -64,7 +64,7 @@ class StudentCourseListView(LoginRequiredMixin, StudentRequiredMixin, ListView):
 class StudentCourseDetailView(LoginRequiredMixin, StudentRequiredMixin, CourseEnrollmentMixin, DetailView):
     """تفاصيل المقرر للطالب - مع التحقق من التسجيل"""
     model = Course
-    template_name = 'student_panel/courses/detail.html'
+    template_name = 'courses/detail.html'  # Unified course detail
     context_object_name = 'course'
     
     def get_object(self, queryset=None):
