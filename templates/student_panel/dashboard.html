@@ -1,14 +1,16 @@
-{% extends 'base.html' %}
+{% extends 'layouts/dashboard_base.html' %}
 {% load static %}
 
 {% block title %}لوحة التحكم - S-ACM{% endblock %}
 
-{% block content %}
+{% block page_title %}لوحة التحكم{% endblock %}
+
+{% block dashboard_content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2>مرحباً، {{ user.full_name }}</h2>
         <p class="text-muted mb-0">
-            <i class="bi bi-mortarboard me-1"></i>{{ user.major.major_name|default:"غير محدد" }} - 
+            <i class="bi bi-mortarboard me-1"></i>{{ user.major.major_name|default:"غير محدد" }} -
             {{ user.level.level_name|default:"غير محدد" }}
         </p>
     </div>
@@ -28,7 +30,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="col-md-4">
         <div class="stat-card success">
             <div class="d-flex justify-content-between align-items-center">
@@ -40,7 +42,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="col-md-4">
         <div class="stat-card info">
             <div class="d-flex justify-content-between align-items-center">
@@ -77,7 +79,8 @@
                                 </p>
                             </div>
                             <div class="card-footer">
-                                <a href="{% url 'courses:student_course_detail' course.pk %}" class="btn btn-primary btn-sm w-100">
+                                <a href="{% url 'courses:student_course_detail' course.pk %}"
+                                    class="btn btn-primary btn-sm w-100">
                                     <i class="bi bi-folder-open me-1"></i>فتح المقرر
                                 </a>
                             </div>
@@ -93,7 +96,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Recent Files -->
     <div class="col-lg-4">
         <div class="card">
@@ -103,7 +106,8 @@
             <div class="card-body p-0">
                 {% for file in recent_files %}
                 <div class="file-item">
-                    <div class="file-icon {% if file.local_file %}{% if '.pdf' in file.local_file.name %}pdf{% elif '.doc' in file.local_file.name %}doc{% elif '.ppt' in file.local_file.name %}ppt{% else %}other{% endif %}{% else %}other{% endif %}">
+                    <div
+                        class="file-icon {% if file.local_file %}{% if '.pdf' in file.local_file.name %}pdf{% elif '.doc' in file.local_file.name %}doc{% elif '.ppt' in file.local_file.name %}ppt{% else %}other{% endif %}{% else %}other{% endif %}">
                         <i class="bi bi-file-earmark"></i>
                     </div>
                     <div class="file-info">
@@ -130,7 +134,8 @@
         <div class="row align-items-center">
             <div class="col-md-8">
                 <h4><i class="bi bi-robot me-2"></i>ميزات الذكاء الاصطناعي</h4>
-                <p class="mb-0">استخدم الذكاء الاصطناعي لتلخيص المحاضرات، توليد أسئلة اختبارية، والحصول على إجابات فورية من محتوى الملفات.</p>
+                <p class="mb-0">استخدم الذكاء الاصطناعي لتلخيص المحاضرات، توليد أسئلة اختبارية، والحصول على إجابات فورية
+                    من محتوى الملفات.</p>
             </div>
             <div class="col-md-4 text-md-end mt-3 mt-md-0">
                 <a href="{% url 'ai_features:usage_stats' %}" class="btn btn-light">
@@ -140,4 +145,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock dashboard_content %}

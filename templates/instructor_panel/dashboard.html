@@ -1,9 +1,11 @@
-{% extends 'base.html' %}
+{% extends 'layouts/dashboard_base.html' %}
 {% load static %}
 
 {% block title %}لوحة التحكم - S-ACM{% endblock %}
 
-{% block content %}
+{% block page_title %}لوحة التحكم{% endblock %}
+
+{% block dashboard_content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2>مرحباً، {{ user.full_name }}</h2>
@@ -27,7 +29,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="col-md-4">
         <div class="stat-card success">
             <div class="d-flex justify-content-between align-items-center">
@@ -39,7 +41,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="col-md-4">
         <div class="stat-card info">
             <div class="d-flex justify-content-between align-items-center">
@@ -77,10 +79,12 @@
                                 </p>
                             </div>
                             <div class="card-footer d-flex gap-2">
-                                <a href="{% url 'courses:instructor_course_detail' course.pk %}" class="btn btn-primary btn-sm flex-fill">
+                                <a href="{% url 'courses:instructor_course_detail' course.pk %}"
+                                    class="btn btn-primary btn-sm flex-fill">
                                     <i class="bi bi-folder-open me-1"></i>إدارة
                                 </a>
-                                <a href="{% url 'courses:file_upload' %}?course={{ course.pk }}" class="btn btn-success btn-sm">
+                                <a href="{% url 'courses:file_upload' %}?course={{ course.pk }}"
+                                    class="btn btn-success btn-sm">
                                     <i class="bi bi-upload"></i>
                                 </a>
                             </div>
@@ -96,7 +100,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Quick Actions & Recent Uploads -->
     <div class="col-lg-4">
         <!-- Quick Actions -->
@@ -115,7 +119,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Recent Uploads -->
         <div class="card">
             <div class="card-header">
@@ -124,7 +128,8 @@
             <div class="card-body p-0">
                 {% for file in recent_uploads %}
                 <div class="file-item">
-                    <div class="file-icon {% if file.local_file %}{% if '.pdf' in file.local_file.name %}pdf{% elif '.doc' in file.local_file.name %}doc{% elif '.ppt' in file.local_file.name %}ppt{% else %}other{% endif %}{% else %}other{% endif %}">
+                    <div
+                        class="file-icon {% if file.local_file %}{% if '.pdf' in file.local_file.name %}pdf{% elif '.doc' in file.local_file.name %}doc{% elif '.ppt' in file.local_file.name %}ppt{% else %}other{% endif %}{% else %}other{% endif %}">
                         <i class="bi bi-file-earmark"></i>
                     </div>
                     <div class="file-info">
@@ -144,4 +149,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock dashboard_content %}

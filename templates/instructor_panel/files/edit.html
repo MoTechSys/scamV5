@@ -1,13 +1,16 @@
-{% extends 'base.html' %}
+{% extends 'layouts/dashboard_base.html' %}
 {% load static %}
 
 {% block title %}تعديل ملف - S-ACM{% endblock %}
 
-{% block content %}
+{% block page_title %}تعديل ملف{% endblock %}
+
+{% block dashboard_content %}
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{% url 'courses:course_list' %}">المقررات</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'courses:course_detail' object.course.pk %}">{{ object.course.course_name }}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'courses:course_detail' object.course.pk %}">{{
+                object.course.course_name }}</a></li>
         <li class="breadcrumb-item active">تعديل ملف</li>
     </ol>
 </nav>
@@ -27,15 +30,15 @@
                 </div>
                 {% endfor %}
                 {% endif %}
-                
+
                 <form method="post" enctype="multipart/form-data" novalidate>
                     {% csrf_token %}
-                    
+
                     <div class="mb-3">
                         <label class="form-label fw-bold">المقرر الدراسي</label>
                         <p class="form-control-plaintext">{{ object.course.course_name }}</p>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="id_file_type" class="form-label">تصنيف الملف</label>
                         {{ form.file_type }}
@@ -43,7 +46,7 @@
                         <div class="invalid-feedback d-block">{{ form.file_type.errors.0 }}</div>
                         {% endif %}
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="id_title" class="form-label">عنوان الملف</label>
                         {{ form.title }}
@@ -51,7 +54,7 @@
                         <div class="invalid-feedback d-block">{{ form.title.errors.0 }}</div>
                         {% endif %}
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label fw-bold">الملف الحالي</label>
                         {% if object.local_file %}
@@ -62,23 +65,24 @@
                         {% elif object.external_link %}
                         <p class="form-control-plaintext">
                             <i class="bi bi-link-45deg me-1"></i>
-                            <a href="{{ object.external_link }}" target="_blank">{{ object.external_link|truncatechars:50 }}</a>
+                            <a href="{{ object.external_link }}" target="_blank">{{
+                                object.external_link|truncatechars:50 }}</a>
                         </p>
                         {% endif %}
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="id_description" class="form-label">الوصف (اختياري)</label>
                         {{ form.description }}
                     </div>
-                    
+
                     <div class="mb-3">
                         <div class="form-check form-switch">
                             {{ form.is_visible }}
                             <label class="form-check-label" for="id_is_visible">مرئي للطلاب</label>
                         </div>
                     </div>
-                    
+
                     <div class="d-flex gap-2 justify-content-end">
                         <a href="{% url 'courses:course_detail' object.course.pk %}" class="btn btn-secondary">
                             <i class="bi bi-x-lg me-1"></i>إلغاء
@@ -92,4 +96,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock dashboard_content %}

@@ -1,9 +1,11 @@
-{% extends 'base.html' %}
+{% extends 'layouts/dashboard_base.html' %}
 {% load static %}
 
 {% block title %}{{ course.course_name }} - S-ACM{% endblock %}
 
-{% block content %}
+{% block page_title %}{{ course.course_name }}{% endblock %}
+
+{% block dashboard_content %}
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{% url 'courses:instructor_dashboard' %}">لوحة التحكم</a></li>
@@ -25,7 +27,8 @@
                 </p>
             </div>
             <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                <a href="{% url 'courses:file_upload' %}?course={{ course.pk }}" class="btn btn-light text-primary shadow-sm">
+                <a href="{% url 'courses:file_upload' %}?course={{ course.pk }}"
+                    class="btn btn-light text-primary shadow-sm">
                     <i class="bi bi-cloud-plus me-1"></i>رفع ملف جديد
                 </a>
             </div>
@@ -67,11 +70,11 @@
                             <div class="d-flex align-items-center">
                                 <div class="file-icon-sm me-3 text-primary fs-4">
                                     {% if file.content_type == 'external_link' %}
-                                        <i class="bi bi-link-45deg"></i>
+                                    <i class="bi bi-link-45deg"></i>
                                     {% elif '.pdf' in file.file_extension %}
-                                        <i class="bi bi-file-earmark-pdf text-danger"></i>
+                                    <i class="bi bi-file-earmark-pdf text-danger"></i>
                                     {% else %}
-                                        <i class="bi bi-file-earmark-text"></i>
+                                    <i class="bi bi-file-earmark-text"></i>
                                     {% endif %}
                                 </div>
                                 <div>
@@ -83,25 +86,30 @@
                         <td><span class="badge bg-light text-dark border">{{ file.get_file_type_display }}</span></td>
                         <td>
                             {% if file.is_visible %}
-                                <span class="badge bg-success-subtle text-success">مرئي</span>
+                            <span class="badge bg-success-subtle text-success">مرئي</span>
                             {% else %}
-                                <span class="badge bg-warning-subtle text-warning">مخفي</span>
+                            <span class="badge bg-warning-subtle text-warning">مخفي</span>
                             {% endif %}
                         </td>
                         <td>
                             <div class="d-flex gap-3 small text-muted">
                                 <span title="مشاهدات"><i class="bi bi-eye me-1"></i>{{ file.view_count }}</span>
-                                <span title="تحميلات"><i class="bi bi-download me-1"></i>{{ file.download_count }}</span>
+                                <span title="تحميلات"><i class="bi bi-download me-1"></i>{{ file.download_count
+                                    }}</span>
                             </div>
                         </td>
                         <td class="text-end pe-4">
                             <div class="btn-group">
                                 <div class="btn-group">
-                                    <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle rounded-end" data-bs-toggle="dropdown" title="أدوات الذكاء الاصطناعي">
+                                    <button type="button"
+                                        class="btn btn-sm btn-outline-primary dropdown-toggle rounded-end"
+                                        data-bs-toggle="dropdown" title="أدوات الذكاء الاصطناعي">
                                         <i class="bi bi-stars"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end shadow">
-                                        <li><h6 class="dropdown-header">الذكاء الاصطناعي (Gemini)</h6></li>
+                                        <li>
+                                            <h6 class="dropdown-header">الذكاء الاصطناعي (Gemini)</h6>
+                                        </li>
                                         <li>
                                             <form method="post" action="{% url 'courses:instructor_file_ai' file.pk %}">
                                                 {% csrf_token %}
@@ -112,25 +120,30 @@
                                             </form>
                                         </li>
                                         <li>
-                                            <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#aiQuestionsModal{{ file.pk }}">
+                                            <button type="button" class="dropdown-item" data-bs-toggle="modal"
+                                                data-bs-target="#aiQuestionsModal{{ file.pk }}">
                                                 <i class="bi bi-patch-question me-2"></i>توليد أسئلة
                                             </button>
                                         </li>
                                     </ul>
                                 </div>
 
-                                <form method="post" action="{% url 'courses:file_toggle_visibility' file.pk %}" class="d-inline">
+                                <form method="post" action="{% url 'courses:file_toggle_visibility' file.pk %}"
+                                    class="d-inline">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-outline-secondary" title="{% if file.is_visible %}إخفاء{% else %}إظهار{% endif %}">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary"
+                                        title="{% if file.is_visible %}إخفاء{% else %}إظهار{% endif %}">
                                         <i class="bi bi-eye{% if not file.is_visible %}-slash{% endif %}"></i>
                                     </button>
                                 </form>
 
-                                <a href="{% url 'courses:file_update' file.pk %}" class="btn btn-sm btn-outline-secondary" title="تعديل">
+                                <a href="{% url 'courses:file_update' file.pk %}"
+                                    class="btn btn-sm btn-outline-secondary" title="تعديل">
                                     <i class="bi bi-pencil"></i>
                                 </a>
 
-                                <button type="button" class="btn btn-sm btn-outline-danger rounded-start" data-bs-toggle="modal" data-bs-target="#deleteModal{{ file.pk }}" title="حذف">
+                                <button type="button" class="btn btn-sm btn-outline-danger rounded-start"
+                                    data-bs-toggle="modal" data-bs-target="#deleteModal{{ file.pk }}" title="حذف">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </div>
@@ -142,8 +155,11 @@
                                             {% csrf_token %}
                                             <input type="hidden" name="action" value="questions">
                                             <div class="modal-header">
-                                                <h5 class="modal-title"><i class="bi bi-robot me-2 text-primary"></i>توليد أسئلة بالذكاء الاصطناعي</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                <h5 class="modal-title"><i
+                                                        class="bi bi-robot me-2 text-primary"></i>توليد أسئلة بالذكاء
+                                                    الاصطناعي</h5>
+                                                <button type="button" class="btn-close"
+                                                    data-bs-dismiss="modal"></button>
                                             </div>
                                             <div class="modal-body">
                                                 <div class="mb-3">
@@ -157,14 +173,17 @@
                                                 </div>
                                                 <div class="mb-3">
                                                     <label class="form-label">عدد الأسئلة</label>
-                                                    <input type="number" name="num_questions" class="form-control" value="5" min="1" max="20">
+                                                    <input type="number" name="num_questions" class="form-control"
+                                                        value="5" min="1" max="20">
                                                 </div>
                                                 <div class="alert alert-info small mb-0">
-                                                    <i class="bi bi-info-circle me-1"></i>سيتم حفظ الأسئلة المولدة في بنك الأسئلة الخاص بالمقرر.
+                                                    <i class="bi bi-info-circle me-1"></i>سيتم حفظ الأسئلة المولدة في
+                                                    بنك الأسئلة الخاص بالمقرر.
                                                 </div>
                                             </div>
                                             <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">إلغاء</button>
                                                 <button type="submit" class="btn btn-primary">ابدأ التوليد</button>
                                             </div>
                                         </form>
@@ -183,7 +202,8 @@
                                             <p>هل أنت متأكد من حذف الملف "<strong>{{ file.title }}</strong>"؟</p>
                                         </div>
                                         <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">إلغاء</button>
                                             <form method="post" action="{% url 'courses:file_delete' file.pk %}">
                                                 {% csrf_token %}
                                                 <button type="submit" class="btn btn-danger">حذف</button>
@@ -211,4 +231,4 @@
         {% endif %}
     </div>
 </div>
-{% endblock %}
+{% endblock dashboard_content %}
